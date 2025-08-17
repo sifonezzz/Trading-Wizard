@@ -36,14 +36,12 @@ public class SetupDetailController implements Controller {
 
     @FXML
     private void showWonSetups() {
-        // Placeholder for the next phase
-        System.out.println("Show Won Setups for: " + currentSetup.getName());
+        mainApp.showExamplesView(currentSetup, "Won");
     }
 
     @FXML
     private void showLostSetups() {
-        // Placeholder for the next phase
-        System.out.println("Show Lost Setups for: " + currentSetup.getName());
+        mainApp.showExamplesView(currentSetup, "Lost");
     }
     
     @FXML

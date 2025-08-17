@@ -64,6 +64,27 @@
 .cancel-button { -fx-font-size: 12px; -fx-padding: 6 12 6 12; -fx-background-color: #424242; }
 .cancel-button:hover { -fx-background-color: #616161; }
 
+/* --- NEW --- Styles for example image buttons */
+.image-action-button {
+    -fx-background-color: #424242;
+    -fx-padding: 6 10 6 10;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+}
+
+.image-action-button .ikonli-font-icon {
+    -fx-icon-size: 14;
+    -fx-fill: -soft-white-text;
+}
+
+.image-action-button:hover {
+    -fx-background-color: #616161;
+}
+
+.image-action-button.delete-button:hover {
+    -fx-background-color: -negative-color;
+}
+
 /* Text Fields & Areas */
 .text-field, .text-area { -fx-font-family: "Fira Code Regular"; -fx-background-color: -frame-bg-color; -fx-text-fill: -soft-white-text; -fx-font-size: 12px; -fx-background-radius: 8; -fx-border-color: -border-color; -fx-border-radius: 8; }
 .text-area .content { -fx-background-color: -frame-bg-color; }
