@@ -127,3 +127,32 @@
 .negative-day-circle { -fx-fill: -negative-color; }
 .no-pnl-day-circle { -fx-fill: -border-color; }
 .welcome-label { -fx-font-family: "Fira Code Bold"; -fx-font-size: 28px; -fx-text-fill: white; }
+/* Add to the end of the file */
+
+/* Description edit styles */
+.non-editable-text {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: -soft-white-text;
+    -fx-cursor: default;
+}
+
+.editable-text {
+    -fx-background-color: -frame-bg-color;
+    -fx-border-color: -border-color;
+    -fx-border-radius: 8px;
+    -fx-text-fill: -soft-white-text;
+    -fx-cursor: text;
+}
+
+.icon-button {
+    -fx-font-size: 12px;
+    -fx-padding: 4 8 4 8;
+    -fx-background-color: #424242;
+    -fx-background-radius: 5;
+    -fx-text-fill: -soft-white-text;
+}
+
+.icon-button:hover {
+    -fx-background-color: #555;
+}
