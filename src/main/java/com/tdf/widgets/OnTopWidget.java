@@ -2,11 +2,13 @@ package com.tdf.widgets;
 
 import com.tdf.MainApp;
 import com.tdf.data.Settings;
-import com.tdf.dialogs.StopTradingDialog;
+import com.tdf.dialogs.EndSessionController; // THIS IS THE CRITICAL FIX
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -17,7 +19,10 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
+
+import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Objects;
 
 public class OnTopWidget extends Stage {
     private MainApp mainApp;
@@ -82,8 +87,8 @@ public class OnTopWidget extends Stage {
         root.setCenter(content);
 
         Scene scene = new Scene(root, 360, 210);
-        scene.setFill(Color.TRANSPARENT); // FIX: Ensure background is transparent
-        scene.getStylesheets().add(mainApp.getClass().getResource("styles.css").toExternalForm());
+        scene.setFill(Color.TRANSPARENT);
+        scene.getStylesheets().add(Objects.requireNonNull(mainApp.getClass().getResource("/com/tdf/styles.css")).toExternalForm());
         setScene(scene);
 
         startRuleRotation();
@@ -101,11 +106,31 @@ public class OnTopWidget extends Stage {
         ruleLabel.setText(settings.rules.get(currentRuleIndex));
         timeline.play();
     }
-
+    
     private void stopTrading() {
         this.close();
-        StopTradingDialog dialog = new StopTradingDialog(mainApp);
-        dialog.showAndWait();
-        mainApp.returnToMainMenu();
+
+        try {
+            Stage dialogStage = new Stage();
+            dialogStage.initOwner(mainApp.getPrimaryStage());
+            dialogStage.initStyle(StageStyle.UNDECORATED);
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/tdf/fxml/EndSession.fxml"));
+            Parent root = loader.load();
+            
+            EndSessionController controller = loader.getController();
+            controller.initialize(dialogStage, mainApp);
+
+            Scene scene = new Scene(root);
+            scene.setFill(Color.TRANSPARENT);
+            scene.getStylesheets().add(Objects.requireNonNull(mainApp.getClass().getResource("/com/tdf/styles.css")).toExternalForm());
+            
+            dialogStage.setScene(scene);
+            dialogStage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            mainApp.returnToMainMenu();
+        }
     }
 }

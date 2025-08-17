@@ -45,6 +45,12 @@
                               <FontIcon iconLiteral="fas-calendar-alt" styleClass="icon" />
                            </graphic>
                         </ToggleButton>
+                        <!-- NEW "SETUPS SAMPLES" BUTTON -->
+                        <ToggleButton maxWidth="Infinity" onAction="#showSetups" styleClass="sidebar-button" text="Setups Samples" toggleGroup="$navigationGroup">
+                           <graphic>
+                              <FontIcon iconLiteral="fas-lightbulb" styleClass="icon" />
+                           </graphic>
+                        </ToggleButton>
                         <ToggleButton maxWidth="Infinity" onAction="#showSettings" styleClass="sidebar-button" text="Settings" toggleGroup="$navigationGroup">
                            <graphic>
                               <FontIcon iconLiteral="fas-cog" styleClass="icon" />
@@ -75,7 +81,6 @@
                <children>
                   <Label fx:id="windowTitle" styleClass="window-title" text="Trading Wizard" />
                   <Pane HBox.hgrow="ALWAYS" />
-                  <!-- FIX: Added the correct styleClass to each window button -->
                   <Button onAction="#handleMinimize" styleClass="window-button" text="_" />
                   <Button onAction="#handleMaximize" styleClass="window-button" text="[]" />
                   <Button onAction="#handleClose" styleClass="window-button-close" text="X" />

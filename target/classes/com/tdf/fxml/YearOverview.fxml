@@ -7,13 +7,11 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
-<!-- FIX IS HERE: Added the import for HBox -->
-<?import javafx.scene.layout.HBox?>
 
-
-<BorderPane styleClass="main-view" prefHeight="850.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.tdf.controllers.YearOverviewController">
+<BorderPane styleClass="main-view" prefHeight="950.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.tdf.controllers.YearOverviewController">
    <top>
       <VBox alignment="CENTER" spacing="10.0" BorderPane.alignment="CENTER">
          <children>
@@ -26,7 +24,7 @@
       </VBox>
    </top>
    <center>
-      <ScrollPane fitToWidth="true" styleClass="main-view">
+      <ScrollPane fitToWidth="true" styleClass="scroll-pane">
          <content>
             <GridPane fx:id="yearGrid" hgap="15.0" vgap="15.0">
               <columnConstraints>
@@ -47,4 +45,14 @@
          </content>
       </ScrollPane>
    </center>
+   <bottom>
+      <HBox alignment="CENTER" BorderPane.alignment="CENTER">
+         <children>
+            <Button onAction="#handleBackToMenu" styleClass="standard-button" text="&lt; Back to PNL Calendar" />
+         </children>
+         <padding>
+            <Insets bottom="20.0" top="10.0" />
+         </padding>
+      </HBox>
+   </bottom>
 </BorderPane>

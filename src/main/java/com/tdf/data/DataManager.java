@@ -4,9 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,19 +14,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 public class DataManager {
 
-    private static final String BASE_DIR = System.getProperty("user.home") + "/.TradingDisciplineFramework";
+    private static final String BASE_DIR_NAME = ".TradingDisciplineFramework";
+    private static final String BASE_DIR = System.getProperty("user.home") + File.separator + BASE_DIR_NAME;
     private static final Path SETTINGS_FILE = Paths.get(BASE_DIR, "settings.json");
     private static final Path NOTES_FILE = Paths.get(BASE_DIR, "notes.json");
     private static final Path PNL_FILE = Paths.get(BASE_DIR, "pnl.json");
+    private static final Path SETUP_SAMPLES_FILE = Paths.get(BASE_DIR, "setup_samples.json");
+    private static final String[] ALL_FILES = {"settings.json", "notes.json", "pnl.json", "setup_samples.json"};
 
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     private Settings settings;
     private List<Note> notes;
     private Map<String, PnlEntry> pnlData;
+    private List<SetupSample> setupSamples;
 
     public DataManager() {
         try {
@@ -37,11 +42,21 @@ public class DataManager {
             System.err.println("Could not create application data directory.");
             e.printStackTrace();
         }
+        loadAllData();
+    }
+    
+    public void loadAllData() {
         loadSettings();
         loadNotes();
         loadPnlData();
+        loadSetupSamples();
     }
 
+    public String getBaseDir() {
+        return BASE_DIR;
+    }
+
+    // --- Settings Methods ---
     public Settings getSettings() { return settings; }
 
     public void saveSettings(Settings newSettings) {
@@ -63,6 +78,7 @@ public class DataManager {
         }
     }
 
+    // --- Notes Methods ---
     public List<Note> getNotes() { return notes; }
 
     public void addNote(Note note) {
@@ -86,32 +102,26 @@ public class DataManager {
         } catch (IOException e) { e.printStackTrace(); }
     }
 
+    // --- PNL Methods ---
     public Map<String, PnlEntry> getPnlData() { return new TreeMap<>(pnlData); }
 
     public void addPnl(String dateStr, double amount, String noteOfDay) {
         PnlEntry entry = pnlData.getOrDefault(dateStr, new PnlEntry());
         entry.pnl += amount;
         if (noteOfDay != null && !noteOfDay.isBlank()) { entry.note = noteOfDay; }
+        if (settings.maxLoss > 0 && entry.pnl < -settings.maxLoss) {
+            entry.exceededMaxLoss = true;
+        }
         pnlData.put(dateStr, entry);
         savePnlData();
     }
 
-    // New method for the counter
     public void incrementUndisciplineCount(String dateStr) {
         PnlEntry entry = pnlData.getOrDefault(dateStr, new PnlEntry());
         entry.undisciplineCount++;
         pnlData.put(dateStr, entry);
         savePnlData();
     }
-
-    // New method for the reset button
-    public void resetDate(String dateStr) {
-        if (pnlData.containsKey(dateStr)) {
-            pnlData.remove(dateStr);
-            savePnlData();
-        }
-    }
-
 
     private void loadPnlData() {
         if (Files.exists(PNL_FILE)) {
@@ -127,5 +137,69 @@ public class DataManager {
         try (FileWriter writer = new FileWriter(PNL_FILE.toFile())) {
             gson.toJson(pnlData, writer);
         } catch (IOException e) { e.printStackTrace(); }
+    }
+    
+    // --- Setup Samples Methods ---
+    public List<SetupSample> getSetupSamples() {
+        return setupSamples;
+    }
+
+    public void saveSetupSamples() {
+        try (FileWriter writer = new FileWriter(SETUP_SAMPLES_FILE.toFile())) {
+            gson.toJson(setupSamples, writer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private void loadSetupSamples() {
+        if (Files.exists(SETUP_SAMPLES_FILE)) {
+            try (FileReader reader = new FileReader(SETUP_SAMPLES_FILE.toFile())) {
+                Type listType = new TypeToken<ArrayList<SetupSample>>(){}.getType();
+                setupSamples = gson.fromJson(reader, listType);
+                if (setupSamples == null) {
+                    setupSamples = new ArrayList<>();
+                }
+            } catch (IOException e) {
+                setupSamples = new ArrayList<>();
+            }
+        } else {
+            setupSamples = new ArrayList<>();
+        }
+    }
+    
+    // --- Backup and Restore Methods ---
+    public boolean createBackup(File targetZipFile) {
+        try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(targetZipFile))) {
+            for (String fileName : ALL_FILES) {
+                File fileToBackup = new File(BASE_DIR, fileName);
+                if (fileToBackup.exists()) {
+                    zos.putNextEntry(new ZipEntry(fileName));
+                    Files.copy(fileToBackup.toPath(), zos);
+                    zos.closeEntry();
+                }
+            }
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean restoreFromBackup(File sourceZipFile) {
+        try (ZipInputStream zis = new ZipInputStream(new FileInputStream(sourceZipFile))) {
+            ZipEntry zipEntry = zis.getNextEntry();
+            while (zipEntry != null) {
+                File newFile = new File(BASE_DIR, zipEntry.getName());
+                Files.copy(zis, newFile.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                zis.closeEntry();
+                zipEntry = zis.getNextEntry();
+            }
+            loadAllData();
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

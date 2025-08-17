@@ -31,6 +31,7 @@ public class MainViewController implements Controller {
     private MainApp mainApp;
     private double xOffset = 0;
     private double yOffset = 0;
+    private static final double SIDEBAR_WIDTH = 220.0;
 
     @Override
     public void setMainApp(MainApp mainApp) {
@@ -49,7 +50,7 @@ public class MainViewController implements Controller {
             stage.setY(event.getScreenY() - yOffset);
         });
 
-        sidebar.setTranslateX(-sidebar.getPrefWidth());
+        sidebar.setTranslateX(-SIDEBAR_WIDTH);
         
         Platform.runLater(() -> triggerWelcomeAnimation("Welcome"));
     }
@@ -58,10 +59,8 @@ public class MainViewController implements Controller {
         if (show) {
             sidebar.setVisible(true);
         }
-        
         TranslateTransition slide = new TranslateTransition(Duration.millis(350), sidebar);
-        slide.setToX(show ? 0 : -sidebar.getWidth());
-        
+        slide.setToX(show ? 0 : -SIDEBAR_WIDTH);
         if (!show) {
             slide.setOnFinished(e -> sidebar.setVisible(false));
         }
@@ -129,19 +128,49 @@ public class MainViewController implements Controller {
             loadAction.run();
         }
     }
+    
+    /**
+     * Public method to allow external classes (like MainApp) to set the content pane.
+     * This is used for navigating to views that require data to be passed, like SetupDetail.
+     * @param node The view to display.
+     */
+    public void setContent(Node node) {
+        Node currentView = contentPane.getCenter();
+        
+        Runnable setAction = () -> {
+            node.setOpacity(0);
+            contentPane.setCenter(node);
+            Platform.runLater(() -> {
+                FadeTransition fadeIn = new FadeTransition(Duration.millis(250), node);
+                fadeIn.setToValue(1);
+                fadeIn.play();
+            });
+        };
 
-    @FXML private void showDashboard() { loadView("Dashboard.fxml"); }
+        if (currentView != null) {
+            FadeTransition fadeOut = new FadeTransition(Duration.millis(250), currentView);
+            fadeOut.setToValue(0);
+            fadeOut.setOnFinished(e -> setAction.run());
+            fadeOut.play();
+        } else {
+            setAction.run();
+        }
+    }
+
+
+    // --- Navigation Methods ---
+    @FXML public void showDashboard() { loadView("Dashboard.fxml"); }
     @FXML private void showJournal() { loadView("NotesView.fxml"); }
-    @FXML private void showCalendar() { loadView("PnlCalendar.fxml"); }
+    @FXML public void showCalendar() { loadView("PnlCalendar.fxml"); }
+    @FXML public void showSetups() { loadView("SetupsView.fxml"); }
     @FXML private void showSettings() { loadView("Settings.fxml"); }
-
-    // --- THIS IS THE FIX ---
     @FXML public void showYearOverview() { loadView("YearOverview.fxml"); }
+    public void showAddWidgets() { loadView("AddWidgets.fxml"); }
 
     @FXML 
     private void showTradingFlow() {
         TranslateTransition slideOut = new TranslateTransition(Duration.millis(300), sidebar);
-        slideOut.setToX(-sidebar.getWidth());
+        slideOut.setToX(-SIDEBAR_WIDTH);
         slideOut.setOnFinished(e -> {
             sidebar.setVisible(false);
             rootPane.setLeft(null); 
@@ -180,6 +209,7 @@ public class MainViewController implements Controller {
         triggerWelcomeAnimation("Welcome Back");
     }
 
+    // --- Window Control Methods ---
     @FXML private void handleClose() { Platform.exit(); }
     @FXML private void handleMinimize() { ((Stage) rootPane.getScene().getWindow()).setIconified(true); }
     @FXML private void handleMaximize() {

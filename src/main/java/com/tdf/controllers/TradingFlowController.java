@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class TradingFlowController implements Controller {
 
     @FXML private VBox contentBox;
+    @FXML private Button cancelButton;
 
     private MainApp mainApp;
     private Settings settings;
@@ -32,15 +33,27 @@ public class TradingFlowController implements Controller {
     public void setMainApp(MainApp mainApp) {
         this.mainApp = mainApp;
         this.settings = MainApp.getDataManager().getSettings();
-        // Changed from showStep() to nextStep() to trigger the first fade-in
+        
+        cancelButton.setOpacity(0);
+        cancelButton.setVisible(true);
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(500), cancelButton);
+        fadeIn.setToValue(1);
+        fadeIn.setDelay(Duration.seconds(1));
+        fadeIn.play();
+
         nextStep();
+    }
+    
+    @FXML
+    private void handleCancelSession() {
+        mainApp.cancelTradingFlow();
     }
     
     private void nextStep() {
         Node currentContent = contentBox.getChildren().isEmpty() ? null : contentBox.getChildren().get(0);
         
         Runnable loadNextAction = () -> {
-            showStep(); // Build the content for the *next* step
+            showStep();
             Node newContent = contentBox.getChildren().isEmpty() ? null : contentBox.getChildren().get(0);
             if (newContent != null) {
                 newContent.setOpacity(0);
@@ -49,7 +62,7 @@ public class TradingFlowController implements Controller {
                 fadeIn.setToValue(1);
                 fadeIn.play();
             }
-            currentStep++; // Increment step *after* showing it
+            currentStep++;
         };
 
         if (currentContent != null) {
@@ -78,7 +91,6 @@ public class TradingFlowController implements Controller {
         Label introLabel = new Label("Let's start trading.");
         introLabel.getStyleClass().add("h1");
         contentBox.getChildren().add(introLabel);
-        
         new Timeline(new KeyFrame(Duration.seconds(2), e -> nextStep())).play();
     }
 
@@ -87,11 +99,14 @@ public class TradingFlowController implements Controller {
         container.setAlignment(Pos.CENTER);
         Label title = new Label("Pre-Trading Checklist");
         title.getStyleClass().add("h2");
-        VBox tasksVBox = new VBox(10);
         
-        List<String> tasks = settings.tasks;
-        for (String task : tasks) {
-            tasksVBox.getChildren().add(new CheckBox(task));
+        VBox tasksVBox = new VBox(10);
+        tasksVBox.setMaxWidth(400);
+        
+        for (String task : settings.tasks) {
+            CheckBox cb = new CheckBox(task);
+            cb.setMaxWidth(Double.MAX_VALUE);
+            tasksVBox.getChildren().add(cb);
         }
         
         Button nextButton = new Button("Next");
@@ -135,9 +150,7 @@ public class TradingFlowController implements Controller {
         nextButton.setDisable(true);
         nextButton.setOnAction(e -> nextStep());
         
-        new Timeline(new KeyFrame(Duration.seconds(5), e -> {
-            setupsVBox.getChildren().forEach(node -> node.setDisable(false));
-        })).play();
+        new Timeline(new KeyFrame(Duration.seconds(5), e -> setupsVBox.getChildren().forEach(node -> node.setDisable(false)))).play();
         
         AtomicInteger clickedCount = new AtomicInteger();
         setupsVBox.getChildren().forEach(node -> {
@@ -171,7 +184,10 @@ public class TradingFlowController implements Controller {
         nextButton.getStyleClass().add("standard-button");
         nextButton.setDisable(true);
         
-        IntegerProperty countdown = new SimpleIntegerProperty(15);
+        // --- THIS IS THE FIX ---
+        // Use the new setting for the countdown duration
+        int countdownSeconds = settings.rulesScreenSeconds;
+        IntegerProperty countdown = new SimpleIntegerProperty(countdownSeconds);
         nextButton.textProperty().bind(countdown.asString("Next (%d)"));
         
         Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
@@ -182,7 +198,8 @@ public class TradingFlowController implements Controller {
                 nextButton.setDisable(false);
             }
         }));
-        timeline.setCycleCount(15);
+        timeline.setCycleCount(countdownSeconds);
+        // -----------------------
         timeline.play();
         
         nextButton.setOnAction(e -> {

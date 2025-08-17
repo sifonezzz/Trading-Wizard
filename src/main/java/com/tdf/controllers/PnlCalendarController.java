@@ -51,11 +51,10 @@ public class PnlCalendarController implements Controller {
     private void drawCalendar() {
         monthLabel.setText(currentMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH)));
         
-        // Clear all nodes from the grid except those in the first row (the headers)
         calendarGrid.getChildren().removeIf(node -> GridPane.getRowIndex(node) != null && GridPane.getRowIndex(node) > 0);
 
         LocalDate firstDayOfMonth = currentMonth.atDay(1);
-        int firstDayOfWeek = firstDayOfMonth.getDayOfWeek().getValue(); // MON=1, ..., SUN=7
+        int firstDayOfWeek = firstDayOfMonth.getDayOfWeek().getValue();
 
         int daysInMonth = currentMonth.lengthOfMonth();
         int day = 1;
@@ -87,6 +86,12 @@ public class PnlCalendarController implements Controller {
                             Label udLabel = new Label("UD: " + pnlEntry.undisciplineCount);
                             dayCell.getChildren().add(udLabel);
                         }
+                        
+                        if (pnlEntry.exceededMaxLoss) {
+                            Label maxLossLabel = new Label("PAST MAX LOSS");
+                            maxLossLabel.getStyleClass().add("max-loss-label");
+                            dayCell.getChildren().add(maxLossLabel);
+                        }
 
                         if (pnl >= 0) {
                             dayCell.getStyleClass().add("positive-day");
@@ -99,7 +104,8 @@ public class PnlCalendarController implements Controller {
                         }
                     }
                     day++;
-                }
+                } // --- THIS WAS THE MISSING BRACE ---
+                
                 calendarGrid.add(dayCell, col, row);
             }
         }
@@ -123,7 +129,6 @@ public class PnlCalendarController implements Controller {
             
             weeklyTotalCell.getChildren().add(weeklyLabel);
             
-            // Add to the 9th column (index 8) and the correct week row (index i+1)
             calendarGrid.add(weeklyTotalCell, 8, i + 1);
             monthlyTotal += pnl;
         }
@@ -139,7 +144,6 @@ public class PnlCalendarController implements Controller {
         
         finalTotalCell.getChildren().add(totalLabel);
 
-        // Add to the 9th column and the last row
         calendarGrid.add(finalTotalCell, 8, 7);
     }
 

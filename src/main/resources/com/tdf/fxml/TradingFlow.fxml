@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
 <BorderPane styleClass="main-view" prefHeight="800.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.tdf.controllers.TradingFlowController">
@@ -12,4 +14,15 @@
          </padding>
       </VBox>
    </center>
+   <bottom>
+      <!-- New Cancel Button Area -->
+      <HBox alignment="CENTER" BorderPane.alignment="CENTER">
+         <children>
+            <Button fx:id="cancelButton" onAction="#handleCancelSession" styleClass="cancel-button" text="Cancel Session" visible="false" />
+         </children>
+         <padding>
+            <Insets bottom="30.0" />
+         </padding>
+      </HBox>
+   </bottom>
 </BorderPane>
