@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane styleClass="content-pane" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.tdf.controllers.NotesViewController">
+    <top>
+        <VBox alignment="CENTER" spacing="15.0" BorderPane.alignment="CENTER">
+            <children>
+                <Label styleClass="h1" text="Trading Journal" />
+                <HBox alignment="CENTER" spacing="10.0" maxWidth="600">
+                    <children>
+                        <TextField fx:id="newNoteField" promptText="Enter a new journal note..." HBox.hgrow="ALWAYS" />
+                        <Button fx:id="addNoteButton" onAction="#handleAddNote" styleClass="standard-button" text="Add Note" />
+                    </children>
+                </HBox>
+            </children>
+            <padding>
+                <Insets top="20.0" />
+            </padding>
+        </VBox>
+    </top>
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="scroll-pane" BorderPane.alignment="CENTER">
+            <content>
+                <VBox fx:id="notesContainer" spacing="15.0" styleClass="content-pane">
+                    <padding>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                    </padding>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </center>
+</BorderPane>

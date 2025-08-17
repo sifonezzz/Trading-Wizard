@@ -1,0 +1,142 @@
+/* --- Global Styles --- */
+.root {
+    -fx-font-family: Fira Code;
+    -app-bg-color: #030303;
+    -frame-bg-color: #101010;
+    -sidebar-color: #181818;
+    -sidebar-button-hover: #2a2a2a;
+    -sidebar-button-selected: #005A9E;
+    -button-color: #1F6AA5;
+    -button-hover-color: #2988d2;
+    -positive-color: #26A69A;
+    -negative-color: #EF5350;
+    -negative-hover-color: #C62828;
+    -soft-white-text: #EAEAEA;
+    -dim-white-text: #b0b0b0;
+    -border-color: #333;
+}
+
+/* --- Base Styles for Panes and Scroll --- */
+.main-view, .content-pane { -fx-background-color: -app-bg-color; }
+.scroll-pane { -fx-background-color: transparent; }
+.scroll-pane > .viewport { -fx-background-color: transparent; }
+.scroll-pane > .corner { -fx-background-color: transparent; }
+.scroll-bar:horizontal, .scroll-bar:vertical { -fx-background-color: -frame-bg-color; }
+.scroll-bar .thumb { -fx-background-color: -button-color; -fx-background-radius: 5; }
+
+
+/* --- Custom Title Bar --- */
+.title-bar { -fx-background-color: -sidebar-color; -fx-padding: 5 5 5 15; }
+.window-title { -fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: -soft-white-text; }
+.window-button, .window-button-close {
+    -fx-background-color: transparent;
+    -fx-text-fill: -soft-white-text;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 2px 12px 2px 12px;
+}
+.window-button:hover { -fx-background-color: -sidebar-button-hover; }
+.window-button-close:hover { -fx-background-color: -negative-color; }
+
+
+/* --- Sidebar --- */
+.sidebar { -fx-background-color: -sidebar-color; -fx-pref-width: 220px; }
+.sidebar-title { -fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white; }
+.sidebar-button { -fx-background-color: transparent; -fx-text-fill: #A9B7D1; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 10 10 10 20; -fx-background-radius: 0; }
+.sidebar-button:hover { -fx-background-color: -sidebar-button-hover; -fx-text-fill: white; }
+.sidebar-button:selected { -fx-background-color: -sidebar-button-selected; -fx-text-fill: white; }
+.icon { -fx-fill: #A9B7D1; -fx-font-size: 1.2em; }
+.sidebar-button:hover .icon, .sidebar-button:selected .icon { -fx-fill: white; }
+
+
+/* --- Labels --- */
+.label { -fx-text-fill: -soft-white-text; }
+.h1 { -fx-font-size: 24px; -fx-font-weight: bold; }
+.h2 { -fx-font-size: 20px; -fx-font-weight: bold; }
+.h3 { -fx-font-size: 16px; -fx-font-weight: bold; }
+.negative-text { -fx-text-fill: -negative-color; }
+.positive-text { -fx-text-fill: -positive-color; }
+.rule-text { -fx-font-size: 14px; }
+
+
+/* --- FIX: Flatter, cleaner design for all pressable buttons --- */
+.standard-button, .exit-button, .ud-button, .filter-button {
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+    /* Removed border and shadow effect for a flat look */
+    -fx-border-width: 0;
+    -fx-effect: none;
+}
+.standard-button:focused, .exit-button:focused, .ud-button:focused, .filter-button:focused, .window-button:focused, .window-button-close:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-outer-border: transparent;
+}
+.standard-button {
+    -fx-font-size: 14px;
+    -fx-padding: 8 15 8 15;
+    -fx-background-color: -button-color;
+}
+.standard-button:hover {
+    -fx-background-color: -button-hover-color;
+}
+.exit-button {
+    -fx-font-size: 14px;
+    -fx-padding: 8 15 8 15;
+    -fx-background-color: -negative-color;
+}
+.exit-button:hover {
+    -fx-background-color: -negative-hover-color;
+}
+.ud-button {
+    -fx-font-size: 11px;
+    -fx-padding: 4 8 4 8;
+    -fx-background-color: #503030;
+}
+.ud-button:hover {
+    -fx-background-color: #704040;
+}
+.filter-button {
+    -fx-font-size: 11px;
+    -fx-padding: 4 8 4 8;
+    -fx-background-color: #333;
+}
+.filter-button:hover {
+    -fx-background-color: #555;
+}
+
+
+/* --- Text Fields & Areas --- */
+.text-field, .text-area { -fx-background-color: -frame-bg-color; -fx-text-fill: -soft-white-text; -fx-font-family: Fira Code; -fx-font-size: 12px; -fx-background-radius: 8; -fx-border-color: -border-color; -fx-border-radius: 8; }
+.text-area .content { -fx-background-color: -frame-bg-color; }
+
+/* --- Other Controls & Views --- */
+.check-box { -fx-text-fill: -soft-white-text; }
+.check-box .box { -fx-background-color: -frame-bg-color; -fx-border-color: -button-color; -fx-border-radius: 4; }
+.check-box:selected .mark { -fx-background-color: -positive-color; }
+.on-top-widget { -fx-background-color: -frame-bg-color; -fx-background-radius: 8; -fx-border-color: -border-color; -fx-border-radius: 8; }
+.dialog-pane { -fx-background-color: -app-bg-color; -fx-border-color: -border-color; }
+.dialog-pane .header-panel { -fx-background-color: -frame-bg-color; }
+.dialog-pane .header-panel .label { -fx-font-style: italic; -fx-text-fill: -dim-white-text; }
+.note-box { -fx-background-color: -frame-bg-color; -fx-background-radius: 10; -fx-padding: 10; }
+.note-date { -fx-font-weight: bold; -fx-text-fill: -soft-white-text; }
+.note-text { -fx-text-fill: -dim-white-text; }
+.calendar-grid { -fx-background-color: #1c1c1c; -fx-background-radius: 10; -fx-padding: 5; }
+.calendar-day-cell { -fx-border-color: #2a2a2a; -fx-background-color: -frame-bg-color; -fx-padding: 3; }
+.day-label { -fx-font-size: 10px; -fx-text-fill: -dim-white-text; }
+.positive-day { -fx-background-color: -positive-color; }
+.positive-day .label { -fx-text-fill: black; }
+.negative-day { -fx-background-color: -negative-color; }
+.negative-day .label { -fx-text-fill: black; }
+.totals-cell { -fx-border-color: #2a2a2a; -fx-background-color: -frame-bg-color; -fx-padding: 3; }
+.total-pnl-label { -fx-font-size: 14px; -fx-font-weight: bold; }
+.chart-plot-background { -fx-background-color: -frame-bg-color; }
+.chart-vertical-grid-lines, .chart-horizontal-grid-lines { -fx-stroke: #2a2a2a; }
+.axis { -fx-tick-label-fill: -dim-white-text; }
+.default-color0.chart-series-line { -fx-stroke: -positive-color; -fx-stroke-width: 2px; }
+.positive-day-circle { -fx-fill: -positive-color; }
+.negative-day-circle { -fx-fill: -negative-color; }
+.no-pnl-day-circle { -fx-fill: -border-color; }
+.welcome-label { -fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: white; }

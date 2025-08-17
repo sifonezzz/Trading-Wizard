@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<StackPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.tdf.controllers.MainViewController">
+   <children>
+      <BorderPane fx:id="rootPane" prefHeight="1000.0" prefWidth="1200.0" styleClass="main-view">
+         <left>
+            <VBox fx:id="sidebar" alignment="TOP_CENTER" spacing="10.0" styleClass="sidebar" visible="false" BorderPane.alignment="CENTER">
+               <children>
+                  <Label styleClass="sidebar-title" text="Trading Wizard" />
+                  <Pane VBox.vgrow="ALWAYS" />
+                  <VBox fx:id="navigationBox" alignment="CENTER" spacing="5.0">
+                     <children>
+                        <ToggleButton fx:id="dashboardButton" maxWidth="Infinity" onAction="#showDashboard" styleClass="sidebar-button" text="Dashboard">
+                           <graphic>
+                              <FontIcon iconLiteral="fas-tachometer-alt" styleClass="icon" />
+                           </graphic>
+                           <toggleGroup>
+                              <ToggleGroup fx:id="navigationGroup" />
+                           </toggleGroup>
+                        </ToggleButton>
+                        <ToggleButton maxWidth="Infinity" onAction="#showTradingFlow" styleClass="sidebar-button" text="Start Session" toggleGroup="$navigationGroup">
+                           <graphic>
+                              <FontIcon iconLiteral="fas-play-circle" styleClass="icon" />
+                           </graphic>
+                        </ToggleButton>
+                        <ToggleButton maxWidth="Infinity" onAction="#showJournal" styleClass="sidebar-button" text="Journal" toggleGroup="$navigationGroup">
+                           <graphic>
+                              <FontIcon iconLiteral="fas-book-open" styleClass="icon" />
+                           </graphic>
+                        </ToggleButton>
+                        <ToggleButton maxWidth="Infinity" onAction="#showCalendar" styleClass="sidebar-button" text="Calendar" toggleGroup="$navigationGroup">
+                           <graphic>
+                              <FontIcon iconLiteral="fas-calendar-alt" styleClass="icon" />
+                           </graphic>
+                        </ToggleButton>
+                        <ToggleButton maxWidth="Infinity" onAction="#showSettings" styleClass="sidebar-button" text="Settings" toggleGroup="$navigationGroup">
+                           <graphic>
+                              <FontIcon iconLiteral="fas-cog" styleClass="icon" />
+                           </graphic>
+                        </ToggleButton>
+                     </children>
+                  </VBox>
+                  <Pane VBox.vgrow="ALWAYS" />
+                  <Button maxWidth="Infinity" onAction="#handleExit" styleClass="sidebar-button" text="Exit">
+                     <graphic>
+                        <FontIcon iconLiteral="fas-sign-out-alt" styleClass="icon" />
+                     </graphic>
+                     <VBox.margin>
+                        <Insets bottom="10.0" />
+                     </VBox.margin>
+                  </Button>
+               </children>
+               <padding>
+                  <Insets top="20.0" />
+               </padding>
+            </VBox>
+         </left>
+         <center>
+            <BorderPane fx:id="contentPane" styleClass="content-pane" BorderPane.alignment="CENTER" />
+         </center>
+         <top>
+            <HBox fx:id="titleBar" alignment="CENTER_LEFT" styleClass="title-bar" BorderPane.alignment="CENTER">
+               <children>
+                  <Label fx:id="windowTitle" styleClass="window-title" text="Trading Wizard" />
+                  <Pane HBox.hgrow="ALWAYS" />
+                  <!-- FIX: Added the correct styleClass to each window button -->
+                  <Button onAction="#handleMinimize" styleClass="window-button" text="_" />
+                  <Button onAction="#handleMaximize" styleClass="window-button" text="[]" />
+                  <Button onAction="#handleClose" styleClass="window-button-close" text="X" />
+               </children>
+            </HBox>
+         </top>
+      </BorderPane>
+      <Label fx:id="welcomeLabel" styleClass="welcome-label" text="Welcome" visible="false" />
+   </children>
+</StackPane>

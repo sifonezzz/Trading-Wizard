@@ -1,0 +1,12 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch Trading Discipline Framework",
+            "request": "launch",
+            "mainClass": "com.tdf.MainApp",
+           "vmArgs": "--module-path \"C:\\Users\\User\\.m2\\repository\\org\\openjfx\\javafx-controls\\17.0.2\\javafx-controls-17.0.2-win.jar;C:\\Users\\User\\.m2\\repository\\org\\openjfx\\javafx-fxml\\17.0.2\\javafx-fxml-17.0.2-win.jar;C:\\Users\\User\\.m2\\repository\\org\\openjfx\\javafx-graphics\\17.0.2\\javafx-graphics-17.0.2-win.jar;C:\\Users\\User\\.m2\\repository\\org\\openjfx\\javafx-base\\17.0.2\\javafx-base-17.0.2-win.jar;C:\\Users\\User\\.m2\\repository\\org\\openjfx\\javafx-media\\17.0.2\\javafx-media-17.0.2-win.jar\" --add-modules javafx.controls,javafx.fxml,javafx.media"
+        }
+    ]
+}
