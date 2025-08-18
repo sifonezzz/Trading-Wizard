@@ -28,6 +28,7 @@ import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
 import javafx.util.Duration;
+
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -55,14 +56,13 @@ public class DashboardController implements Controller {
     private int sourceCol, sourceRow;
     private boolean gridInitialized = false;
 
-    private static final int NUM_COLUMNS = 3;
-    private static final int NUM_ROWS = 3;
+    private static final int NUM_COLUMNS = 4;
+    private static final int NUM_ROWS = 4;
 
     @Override
     public void setMainApp(MainApp mainApp) {
         this.mainApp = mainApp;
         this.dataManager = MainApp.getDataManager();
-        buildDashboard();
     }
 
     @FXML
@@ -70,6 +70,7 @@ public class DashboardController implements Controller {
         ChangeListener<Bounds> sizeListener = (obs, oldVal, newVal) -> {
             if (newVal.getWidth() > 0 && !gridInitialized) {
                 initializeGrid();
+                buildDashboard();
                 gridInitialized = true;
             }
         };
@@ -180,7 +181,6 @@ public class DashboardController implements Controller {
             content.putString("dragging");
             db.setContent(content);
             draggedWidget = (VBox) widget;
-            // Store original position
             sourceCol = GridPane.getColumnIndex(draggedWidget);
             sourceRow = GridPane.getRowIndex(draggedWidget);
             event.consume();
@@ -204,274 +204,28 @@ public class DashboardController implements Controller {
             if (draggedWidget != null) {
                 int newCol = GridPane.getColumnIndex(target);
                 int newRow = GridPane.getRowIndex(target);
-                
-                // Move widget to the new cell
                 GridPane.setColumnIndex(draggedWidget, newCol);
                 GridPane.setRowIndex(draggedWidget, newRow);
-
-                // FIX: Add a new placeholder to the now-empty source cell
                 Pane newPlaceholder = new Pane();
                 newPlaceholder.getStyleClass().add("drop-target-pane");
                 widgetPane.add(newPlaceholder, sourceCol, sourceRow);
                 enableDropTarget(newPlaceholder);
-                
-                // Remove the old placeholder that was just filled
                 widgetPane.getChildren().remove(target);
-                
                 event.setDropCompleted(true);
             }
             event.consume();
         });
     }
     
-    // (All other methods in this file are unchanged)
-
-    private VBox createWidget(String widgetName) {
-        VBox widget = switch (widgetName) {
-            case "Latest Journal Note" -> createLatestNoteWidget();
-            case "Previous Day PNL" -> createPrevDayPnlWidget();
-            case "Current Month Calendar" -> createCurrentMonthWidget();
-            case "Monthly Undiscipline Counter" -> createUdCounterWidget();
-            case "Weekly/Monthly PNL Tracker" -> createWeeklyMonthlyPnlWidget();
-            case "PNL Streak Counter" -> createPnlStreakWidget();
-            case "Best/Worst Day (Monthly)" -> createBestWorstDayWidget();
-            case "Rule of the Day" -> createRuleOfTheDayWidget();
-            default -> null;
-        };
-        if (widget != null) {
-            GridPane.setValignment(widget, VPos.TOP);
-        }
-        return widget;
-    }
-    
-    private VBox createWeeklyMonthlyPnlWidget() {
-        VBox box = createWidgetContainer("PNL Tracker");
-        LocalDate today = LocalDate.now();
-        YearMonth currentMonth = YearMonth.from(today);
-        WeekFields weekFields = WeekFields.of(Locale.getDefault());
-        int currentWeek = today.get(weekFields.weekOfWeekBasedYear());
-        double weeklyPnl = 0;
-        double monthlyPnl = 0;
-        Map<LocalDate, Double> weekData = new TreeMap<>();
-        for (int i = 6; i >= 0; i--) {
-            weekData.put(today.minusDays(i), 0.0);
-        }
-        for (Map.Entry<String, PnlEntry> entry : dataManager.getPnlData().entrySet()) {
-            LocalDate date = LocalDate.parse(entry.getKey());
-            if (YearMonth.from(date).equals(currentMonth)) {
-                monthlyPnl += entry.getValue().pnl;
-                if (date.get(weekFields.weekOfWeekBasedYear()) == currentWeek && date.getYear() == today.getYear()) {
-                    weeklyPnl += entry.getValue().pnl;
-                }
-            }
-            if (weekData.containsKey(date)) {
-                weekData.put(date, entry.getValue().pnl);
-            }
-        }
-        Pane sparkline = createSparkline(new ArrayList<>(weekData.values()));
-        Label weeklyLabel = new Label(String.format("This Week: $%.2f", weeklyPnl));
-        weeklyLabel.getStyleClass().add(weeklyPnl >= 0 ? "positive-text" : "negative-text");
-        Label monthlyLabel = new Label(String.format("This Month: $%.2f", monthlyPnl));
-        monthlyLabel.getStyleClass().add(monthlyPnl >= 0 ? "positive-text" : "negative-text");
-        box.getChildren().addAll(weeklyLabel, monthlyLabel, sparkline);
-        return box;
-    }
-
-    private Pane createSparkline(List<Double> data) {
-        Pane sparklinePane = new Pane();
-        sparklinePane.setPrefSize(240, 50);
-        sparklinePane.setMinHeight(50);
-        if (data.size() < 2) return sparklinePane;
-        double max = data.stream().max(Double::compare).orElse(0.0);
-        double min = data.stream().min(Double::compare).orElse(0.0);
-        double range = max - min;
-        if (range == 0) range = 1;
-        Path path = new Path();
-        path.getStyleClass().add("sparkline-path");
-        double x = 0;
-        double y = 50 - ((data.get(0) - min) / range * 45 + 2.5);
-        path.getElements().add(new MoveTo(x, y));
-        for (int i = 1; i < data.size(); i++) {
-            x = (double) i * (240.0 / (data.size() - 1));
-            y = 50 - ((data.get(i) - min) / range * 45 + 2.5);
-            path.getElements().add(new LineTo(x, y));
-        }
-        sparklinePane.getChildren().add(path);
-        return sparklinePane;
-    }
-
-    private VBox createPnlStreakWidget() {
-        VBox box = createWidgetContainer("PNL Streak");
-        int streak = 0;
-        LocalDate day = LocalDate.now().minusDays(1);
-        Map<String, PnlEntry> pnlData = dataManager.getPnlData();
-        while (true) {
-            PnlEntry entry = pnlData.get(day.toString());
-            if (entry != null && entry.pnl >= 0) {
-                streak++;
-                day = day.minusDays(1);
-            } else {
-                break;
-            }
-        }
-        Label streakLabel = new Label(String.valueOf(streak));
-        streakLabel.setStyle("-fx-font-size: 24px;");
-        if (streak > 0) streakLabel.getStyleClass().add("positive-text");
-        Label descriptionLabel = new Label("Consecutive Green Days");
-        box.getChildren().addAll(streakLabel, descriptionLabel);
-        return box;
-    }
-
-    private VBox createBestWorstDayWidget() {
-        VBox box = createWidgetContainer("Best/Worst Day (Month)");
-        YearMonth currentMonth = YearMonth.now();
-        double bestPnl = Double.NEGATIVE_INFINITY;
-        double worstPnl = Double.POSITIVE_INFINITY;
-        for (Map.Entry<String, PnlEntry> entry : dataManager.getPnlData().entrySet()) {
-            LocalDate date = LocalDate.parse(entry.getKey());
-            if (YearMonth.from(date).equals(currentMonth)) {
-                double pnl = entry.getValue().pnl;
-                if (pnl > bestPnl) bestPnl = pnl;
-                if (pnl < worstPnl) worstPnl = pnl;
-            }
-        }
-        if (bestPnl == Double.NEGATIVE_INFINITY) {
-            box.getChildren().add(new Label("No PNL data for this month."));
-        } else {
-            Label bestLabel = new Label(String.format("Best: $%.2f", bestPnl));
-            bestLabel.getStyleClass().add("positive-text");
-            Label worstLabel = new Label(String.format("Worst: $%.2f", worstPnl));
-            worstLabel.getStyleClass().add("negative-text");
-            box.getChildren().addAll(bestLabel, worstLabel);
-        }
-        return box;
-    }
-
-    private VBox createRuleOfTheDayWidget() {
-        VBox box = createWidgetContainer("Rule of the Day");
-        List<String> rules = dataManager.getSettings().rules;
-        if (rules == null || rules.isEmpty() || rules.stream().allMatch(String::isBlank)) {
-            box.getChildren().add(new Label("No trading rules found in settings."));
-        } else {
-            List<String> nonEmptyRules = rules.stream().filter(r -> !r.isBlank()).toList();
-            int dayOfYear = LocalDate.now().getDayOfYear();
-            int ruleIndex = (dayOfYear - 1) % nonEmptyRules.size();
-            Label ruleLabel = new Label('"' + nonEmptyRules.get(ruleIndex) + '"');
-            ruleLabel.setWrapText(true);
-            ruleLabel.setStyle("-fx-font-style: italic;");
-            box.getChildren().add(ruleLabel);
-        }
-        return box;
-    }
-
-    private VBox createLatestNoteWidget() {
-        VBox box = createWidgetContainer("Latest Journal Note");
-        List<Note> notes = dataManager.getNotes();
-        if (notes.isEmpty()) {
-            box.getChildren().add(new Label("No journal notes found."));
-        } else {
-            Note latestNote = notes.get(0);
-            Label noteText = new Label(latestNote.text);
-            noteText.setWrapText(true);
-            box.getChildren().add(noteText);
-        }
-        return box;
-    }
-
-    private VBox createPrevDayPnlWidget() {
-        VBox box = createWidgetContainer("Previous Day PNL");
-        LocalDate yesterday = LocalDate.now().minusDays(1);
-        PnlEntry entry = dataManager.getPnlData().get(yesterday.toString());
-        if (entry == null) {
-            box.getChildren().add(new Label("No PNL data for yesterday."));
-        } else {
-            Label pnlLabel = new Label(String.format("$%.2f", entry.pnl));
-            if (entry.pnl >= 0) pnlLabel.getStyleClass().add("positive-text");
-            else pnlLabel.getStyleClass().add("negative-text");
-            box.getChildren().add(pnlLabel);
-        }
-        return box;
-    }
-
-    private VBox createCurrentMonthWidget() {
-        VBox box = createWidgetContainer("");
-        LocalDate today = LocalDate.now();
-        YearMonth currentMonth = YearMonth.from(today);
-        Label monthNameLabel = new Label(currentMonth.format(DateTimeFormatter.ofPattern("MMMM", Locale.ENGLISH)));
-        monthNameLabel.getStyleClass().add("h3");
-        box.getChildren().add(0, monthNameLabel);
-        GridPane miniCalendar = new GridPane();
-        miniCalendar.setAlignment(Pos.CENTER);
-        miniCalendar.setHgap(4);
-        miniCalendar.setVgap(4);
-        String[] days = {"M", "T", "W", "T", "F", "S", "S"};
-        for (int i = 0; i < days.length; i++) {
-            miniCalendar.add(new Label(days[i]), i, 0);
-        }
-        LocalDate firstDayOfMonth = currentMonth.atDay(1);
-        int firstDayOfWeek = firstDayOfMonth.getDayOfWeek().getValue();
-        double monthTotalPnl = 0;
-        for (int day = 1; day <= currentMonth.lengthOfMonth(); day++) {
-            LocalDate date = currentMonth.atDay(day);
-            int row = (day + firstDayOfWeek - 2) / 7 + 1;
-            int col = (day + firstDayOfWeek - 2) % 7;
-            Circle dayCircle = new Circle(8);
-            PnlEntry entry = dataManager.getPnlData().get(date.toString());
-            if (entry != null) {
-                monthTotalPnl += entry.pnl;
-                dayCircle.getStyleClass().add(entry.pnl >= 0 ? "positive-day-circle" : "negative-day-circle");
-            } else {
-                dayCircle.getStyleClass().add("no-pnl-day-circle");
-            }
-            miniCalendar.add(dayCircle, col, row);
-        }
-        Label monthTotalLabel = new Label(String.format("$%.2f", monthTotalPnl));
-        if (monthTotalPnl >= 0) monthTotalLabel.getStyleClass().add("positive-text");
-        else monthTotalLabel.getStyleClass().add("negative-text");
-        box.getChildren().addAll(miniCalendar, monthTotalLabel);
-        return box;
-    }
-
-    private VBox createUdCounterWidget() {
-        VBox box = createWidgetContainer("Monthly Undiscipline");
-        YearMonth currentMonth = YearMonth.now();
-        int totalUndisciplined = 0;
-        for (Map.Entry<String, PnlEntry> entry : dataManager.getPnlData().entrySet()) {
-            LocalDate date = LocalDate.parse(entry.getKey());
-            if (YearMonth.from(date).equals(currentMonth)) {
-                totalUndisciplined += entry.getValue().undisciplineCount;
-            }
-        }
-        Label countLabel = new Label(String.valueOf(totalUndisciplined));
-        countLabel.getStyleClass().add("negative-text");
-        countLabel.setStyle("-fx-font-size: 24px;");
-        Label descriptionLabel = new Label("Undisciplined actions this month");
-        box.getChildren().addAll(countLabel, descriptionLabel);
-        return box;
-    }
-
-    private VBox createWidgetContainer(String title) {
-        VBox box = new VBox(10);
-        box.getStyleClass().add("glass-widget");
-        box.setPrefWidth(280);
-        box.setAlignment(Pos.CENTER);
-        if (!title.isEmpty()) {
-            Label titleLabel = new Label(title);
-            titleLabel.getStyleClass().add("h3");
-            box.getChildren().add(titleLabel);
-        }
-        return box;
-    }
-    
-    @FXML
-    private void handleAddWidgets() {
-        if(welcomePane.isVisible()) {
-            FadeTransition fadeOut = new FadeTransition(Duration.millis(200), welcomePane);
-            fadeOut.setToValue(0);
-            fadeOut.setOnFinished(e -> mainApp.showAddWidgets());
-            fadeOut.play();
-        } else {
-            mainApp.showAddWidgets();
-        }
-    }
+    private VBox createWidget(String widgetName) { VBox widget = switch (widgetName) { case "Latest Journal Note" -> createLatestNoteWidget(); case "Previous Day PNL" -> createPrevDayPnlWidget(); case "Current Month Calendar" -> createCurrentMonthWidget(); case "Monthly Undiscipline Counter" -> createUdCounterWidget(); case "Weekly/Monthly PNL Tracker" -> createWeeklyMonthlyPnlWidget(); case "PNL Streak Counter" -> createPnlStreakWidget(); case "Best/Worst Day (Monthly)" -> createBestWorstDayWidget(); case "Rule of the Day" -> createRuleOfTheDayWidget(); default -> null; }; if (widget != null) { GridPane.setValignment(widget, VPos.TOP); } return widget; }
+    private VBox createWeeklyMonthlyPnlWidget() { VBox box = createWidgetContainer("PNL Tracker"); LocalDate today = LocalDate.now(); YearMonth currentMonth = YearMonth.from(today); WeekFields weekFields = WeekFields.of(Locale.getDefault()); int currentWeek = today.get(weekFields.weekOfWeekBasedYear()); double weeklyPnl = 0; double monthlyPnl = 0; for (Map.Entry<String, PnlEntry> entry : dataManager.getPnlData().entrySet()) { LocalDate date = LocalDate.parse(entry.getKey()); if (YearMonth.from(date).equals(currentMonth)) { monthlyPnl += entry.getValue().pnl; if (date.get(weekFields.weekOfWeekBasedYear()) == currentWeek && date.getYear() == today.getYear()) { weeklyPnl += entry.getValue().pnl; } } } Label weeklyLabel = new Label(String.format("This Week: $%.2f", weeklyPnl)); weeklyLabel.getStyleClass().add(weeklyPnl >= 0 ? "positive-text" : "negative-text"); Label monthlyLabel = new Label(String.format("This Month: $%.2f", monthlyPnl)); monthlyLabel.getStyleClass().add(monthlyPnl >= 0 ? "positive-text" : "negative-text"); box.getChildren().addAll(weeklyLabel, monthlyLabel); return box; }
+    private VBox createPnlStreakWidget() { VBox box = createWidgetContainer("PNL Streak"); int streak = 0; LocalDate day = LocalDate.now().minusDays(1); Map<String, PnlEntry> pnlData = dataManager.getPnlData(); while (true) { PnlEntry entry = pnlData.get(day.toString()); if (entry != null && entry.pnl >= 0) { streak++; day = day.minusDays(1); } else { break; } } Label streakLabel = new Label(String.valueOf(streak)); streakLabel.setStyle("-fx-font-size: 24px;"); if (streak > 0) streakLabel.getStyleClass().add("positive-text"); Label descriptionLabel = new Label("Consecutive Green Days"); box.getChildren().addAll(streakLabel, descriptionLabel); return box; }
+    private VBox createBestWorstDayWidget() { VBox box = createWidgetContainer("Best/Worst Day (Month)"); YearMonth currentMonth = YearMonth.now(); double bestPnl = Double.NEGATIVE_INFINITY; double worstPnl = Double.POSITIVE_INFINITY; for (Map.Entry<String, PnlEntry> entry : dataManager.getPnlData().entrySet()) { LocalDate date = LocalDate.parse(entry.getKey()); if (YearMonth.from(date).equals(currentMonth)) { double pnl = entry.getValue().pnl; if (pnl > bestPnl) bestPnl = pnl; if (pnl < worstPnl) worstPnl = pnl; } } if (bestPnl == Double.NEGATIVE_INFINITY) { box.getChildren().add(new Label("No PNL data for this month.")); } else { Label bestLabel = new Label(String.format("Best: $%.2f", bestPnl)); bestLabel.getStyleClass().add("positive-text"); Label worstLabel = new Label(String.format("Worst: $%.2f", worstPnl)); worstLabel.getStyleClass().add("negative-text"); box.getChildren().addAll(bestLabel, worstLabel); } return box; }
+    private VBox createRuleOfTheDayWidget() { VBox box = createWidgetContainer("Rule of the Day"); List<String> rules = dataManager.getSettings().rules; if (rules == null || rules.isEmpty() || rules.stream().allMatch(String::isBlank)) { box.getChildren().add(new Label("No trading rules found in settings.")); } else { List<String> nonEmptyRules = rules.stream().filter(r -> !r.isBlank()).toList(); int dayOfYear = LocalDate.now().getDayOfYear(); int ruleIndex = (dayOfYear - 1) % nonEmptyRules.size(); Label ruleLabel = new Label('"' + nonEmptyRules.get(ruleIndex) + '"'); ruleLabel.setWrapText(true); ruleLabel.setStyle("-fx-font-style: italic;"); box.getChildren().add(ruleLabel); } return box; }
+    private VBox createLatestNoteWidget() { VBox box = createWidgetContainer("Latest Journal Note"); List<Note> notes = dataManager.getNotes(); if (notes.isEmpty()) { box.getChildren().add(new Label("No journal notes found.")); } else { Note latestNote = notes.get(0); Label noteText = new Label(latestNote.text); noteText.setWrapText(true); box.getChildren().add(noteText); } return box; }
+    private VBox createPrevDayPnlWidget() { VBox box = createWidgetContainer("Previous Day PNL"); LocalDate yesterday = LocalDate.now().minusDays(1); PnlEntry entry = dataManager.getPnlData().get(yesterday.toString()); if (entry == null) { box.getChildren().add(new Label("No PNL data for yesterday.")); } else { Label pnlLabel = new Label(String.format("$%.2f", entry.pnl)); if (entry.pnl >= 0) pnlLabel.getStyleClass().add("positive-text"); else pnlLabel.getStyleClass().add("negative-text"); box.getChildren().add(pnlLabel); } return box; }
+    private VBox createCurrentMonthWidget() { VBox box = createWidgetContainer(""); LocalDate today = LocalDate.now(); YearMonth currentMonth = YearMonth.from(today); Label monthNameLabel = new Label(currentMonth.format(DateTimeFormatter.ofPattern("MMMM", Locale.ENGLISH))); monthNameLabel.getStyleClass().add("h3"); box.getChildren().add(0, monthNameLabel); GridPane miniCalendar = new GridPane(); miniCalendar.setAlignment(Pos.CENTER); miniCalendar.setHgap(4); miniCalendar.setVgap(4); String[] days = {"M", "T", "W", "T", "F", "S", "S"}; for (int i = 0; i < days.length; i++) { miniCalendar.add(new Label(days[i]), i, 0); } LocalDate firstDayOfMonth = currentMonth.atDay(1); int firstDayOfWeek = firstDayOfMonth.getDayOfWeek().getValue(); double monthTotalPnl = 0; for (int day = 1; day <= currentMonth.lengthOfMonth(); day++) { LocalDate date = currentMonth.atDay(day); int row = (day + firstDayOfWeek - 2) / 7 + 1; int col = (day + firstDayOfWeek - 2) % 7; Circle dayCircle = new Circle(8); PnlEntry entry = dataManager.getPnlData().get(date.toString()); if (entry != null) { monthTotalPnl += entry.pnl; dayCircle.getStyleClass().add(entry.pnl >= 0 ? "positive-day-circle" : "negative-day-circle"); } else { dayCircle.getStyleClass().add("no-pnl-day-circle"); } miniCalendar.add(dayCircle, col, row); } Label monthTotalLabel = new Label(String.format("$%.2f", monthTotalPnl)); if (monthTotalPnl >= 0) monthTotalLabel.getStyleClass().add("positive-text"); else monthTotalLabel.getStyleClass().add("negative-text"); box.getChildren().addAll(miniCalendar, monthTotalLabel); return box; }
+    private VBox createUdCounterWidget() { VBox box = createWidgetContainer("Monthly Undiscipline"); YearMonth currentMonth = YearMonth.now(); int totalUndisciplined = 0; for (Map.Entry<String, PnlEntry> entry : dataManager.getPnlData().entrySet()) { LocalDate date = LocalDate.parse(entry.getKey()); if (YearMonth.from(date).equals(currentMonth)) { totalUndisciplined += entry.getValue().undisciplineCount; } } Label countLabel = new Label(String.valueOf(totalUndisciplined)); countLabel.getStyleClass().add("negative-text"); countLabel.setStyle("-fx-font-size: 24px;"); Label descriptionLabel = new Label("Undisciplined actions this month"); box.getChildren().addAll(countLabel, descriptionLabel); return box; }
+    private VBox createWidgetContainer(String title) { VBox box = new VBox(10); box.getStyleClass().add("glass-widget"); box.setAlignment(Pos.CENTER); if (!title.isEmpty()) { Label titleLabel = new Label(title); titleLabel.getStyleClass().add("h3"); titleLabel.setWrapText(true); box.getChildren().add(titleLabel); } return box; }
+    @FXML private void handleAddWidgets() { if(welcomePane.isVisible()) { FadeTransition fadeOut = new FadeTransition(Duration.millis(200), welcomePane); fadeOut.setToValue(0); fadeOut.setOnFinished(e -> mainApp.showAddWidgets()); fadeOut.play(); } else { mainApp.showAddWidgets(); } }
 }

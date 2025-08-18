@@ -2,237 +2,110 @@ import os
 
 # --- File Contents ---
 
-# 1. Corrected content for SetupsViewController.java
-setups_controller_content = r"""package com.tdf.controllers;
-
-import com.tdf.Controller;
-import com.tdf.MainApp;
-import com.tdf.data.DataManager;
-import com.tdf.data.SetupSample;
-import javafx.fxml.FXML;
-import javafx.geometry.Pos;
-import javafx.scene.control.Button;
-import javafx.scene.control.DialogPane;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextInputDialog;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
-import org.kordamp.ikonli.javafx.FontIcon;
-
-import java.util.Objects;
-import java.util.Optional;
-
-public class SetupsViewController implements Controller {
-
-    @FXML private FlowPane setupsPane;
-    private MainApp mainApp;
-    private DataManager dataManager;
-
-    @Override
-    public void setMainApp(MainApp mainApp) {
-        this.mainApp = mainApp;
-        this.dataManager = MainApp.getDataManager();
-        loadSetups();
-    }
-
-    private void loadSetups() {
-        setupsPane.getChildren().clear();
-        boolean showWinRate = dataManager.getSettings().showWinRate;
-
-        for (SetupSample setup : dataManager.getSetupSamples()) {
-            VBox setupBox = new VBox(10);
-            setupBox.getStyleClass().add("setup-box"); // Use the styled box
-            setupBox.setPrefWidth(280);
-            setupBox.setAlignment(Pos.TOP_CENTER);
-
-            FontIcon icon = new FontIcon("fas-bullseye");
-            icon.getStyleClass().add("setup-icon");
-
-            String nameText = setup.getName();
-            if (showWinRate) {
-                nameText += String.format(" (%.1f%% WR)", setup.getWinRate());
-            }
-
-            Label nameLabel = new Label(nameText);
-            nameLabel.getStyleClass().add("h3");
-
-            String desc = setup.getDescription();
-            if (desc == null || desc.isEmpty()) {
-                desc = "No description provided.";
-            } else if (desc.length() > 80) {
-                desc = desc.substring(0, 80) + "...";
-            }
-            Label descriptionLabel = new Label(desc);
-            descriptionLabel.getStyleClass().add("note-text");
-            descriptionLabel.setWrapText(true);
-
-            Pane spacer = new Pane();
-            VBox.setVgrow(spacer, Priority.ALWAYS);
-
-            Button viewButton = new Button("View Details");
-            viewButton.getStyleClass().add("standard-button");
-            viewButton.setOnAction(event -> mainApp.showSetupDetail(setup));
-
-            setupBox.getChildren().addAll(icon, nameLabel, descriptionLabel, spacer, viewButton);
-            setupsPane.getChildren().add(setupBox);
-        }
-    }
-
-    @FXML
-    private void handleAddSetup() {
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Add New Setup");
-        dialog.setHeaderText("Enter the name for your new setup sample.");
-        dialog.setContentText("Name:");
-        
-        DialogPane dialogPane = dialog.getDialogPane();
-        dialogPane.getStylesheets().add(Objects.requireNonNull(mainApp.getClass().getResource("/com/tdf/styles.css")).toExternalForm());
-        dialogPane.getStyleClass().add("main-view");
-
-        Optional<String> result = dialog.showAndWait();
-        result.ifPresent(name -> {
-            if (!name.isBlank()) {
-                SetupSample newSetup = new SetupSample(name);
-                dataManager.getSetupSamples().add(newSetup);
-                dataManager.saveSetupSamples();
-                loadSetups();
-            }
-        });
-    }
-}
-"""
-
-# 2. Corrected content for Settings.fxml
-settings_fxml_content = r"""<?xml version="1.0" encoding="UTF-8"?>
+# 1. Corrected content for PnlCalendar.fxml
+pnl_calendar_fxml_content = r"""<?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.NumberAxis?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Tab?>
-<?import javafx.scene.control.TabPane?>
-<?import javafx.scene.control.TextArea?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.ToggleButton?>
-<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane styleClass="main-view" prefHeight="800.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.tdf.controllers.SettingsController">
-   <top>
-      <Label styleClass="h1" text="Settings" BorderPane.alignment="CENTER">
-         <padding>
-            <Insets top="20.0" />
-         </padding>
-      </Label>
-   </top>
-   <center>
-      <TabPane tabClosingPolicy="UNAVAILABLE">
-         <tabs>
-            <Tab text="Content">
-               <content>
-                  <VBox spacing="10.0" styleClass="content-pane">
-                     <children>
-                        <Label text="Customize Lists (one item per line)" styleClass="h3">
-                           <VBox.margin>
-                              <Insets bottom="10.0" />
-                           </VBox.margin>
-                        </Label>
-                        <Label text="Pre-Trading Tasks:" />
-                        <TextArea fx:id="tasksArea" prefHeight="100.0" VBox.vgrow="ALWAYS" />
-                        <Label text="Trading Setups:" />
-                        <TextArea fx:id="setupsArea" prefHeight="100.0" VBox.vgrow="ALWAYS" />
-                        <Label text="Trading Rules:" />
-                        <TextArea fx:id="rulesArea" prefHeight="150.0" VBox.vgrow="ALWAYS" />
-                     </children>
-                     <padding>
-                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-                     </padding>
-                  </VBox>
-               </content>
-            </Tab>
-            <Tab text="Behavior">
-               <content>
-                  <VBox spacing="10.0" styleClass="content-pane">
-                     <children>
-                        <Label text="Timings &amp; Limits" styleClass="h3">
-                           <VBox.margin>
-                              <Insets bottom="10.0" />
-                           </VBox.margin>
-                        </Label>
-                        <GridPane hgap="10.0" vgap="15.0">
-                           <children>
-                              <Label text="Max Loss Amount ($):" />
-                              <TextField fx:id="maxLossField" GridPane.columnIndex="1" />
-                              <Label text="Rule Interval (seconds):" GridPane.rowIndex="1" />
-                              <TextField fx:id="intervalField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                              <Label text="Rules Screen Time (seconds):" GridPane.rowIndex="2" />
-                              <TextField fx:id="rulesScreenTimeField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                           </children>
-                           <columnConstraints>
-                              <ColumnConstraints hgrow="NEVER" minWidth="10.0" />
-                              <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
-                           </columnConstraints>
-                           <rowConstraints>
-                              <RowConstraints />
-                              <RowConstraints />
-                              <RowConstraints />
-                           </rowConstraints>
-                        </GridPane>
-                     </children>
-                     <padding>
-                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-                     </padding>
-                  </VBox>
-               </content>
-            </Tab>
-            <Tab text="Appearance">
-               <content>
-                  <VBox spacing="15.0" styleClass="content-pane">
-                     <children>
-                        <Label text="Visual Customization" styleClass="h3">
-                           <VBox.margin>
-                              <Insets bottom="10.0" />
-                           </VBox.margin>
-                        </Label>
-                        <CheckBox fx:id="winRateCheckbox" text="Show Win Rate on Setups" />
-                        <HBox alignment="CENTER_LEFT" spacing="10.0">
-                           <children>
-                              <Label text="Enable Animated Background:" />
-                              <ToggleButton fx:id="animatedBackgroundToggle" styleClass="settings-toggle-button" text="Off" />
-                           </children>
-                        </HBox>
-                     </children>
-                     <padding>
-                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-                     </padding>
-                  </VBox>
-               </content>
-            </Tab>
-         </tabs>
-      </TabPane>
-   </center>
-   <bottom>
-      <HBox alignment="CENTER" spacing="15.0" BorderPane.alignment="CENTER">
+<VBox alignment="TOP_CENTER" spacing="20.0" styleClass="main-view" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.tdf.controllers.PnlCalendarController">
+   <children>
+      <VBox alignment="CENTER" spacing="10.0">
          <children>
-            <Button onAction="#handleSave" styleClass="standard-button" text="Save Settings" />
-            <Button onAction="#handleBackup" text="Backup Data" styleClass="standard-button" />
-            <Button onAction="#handleRestore" text="Restore from Backup" styleClass="standard-button" />
+            <Label styleClass="h1" text="PNL Calendar" />
+            <HBox alignment="CENTER" spacing="20.0">
+               <children>
+                  <Button fx:id="prevButton" onAction="#handlePrevMonth" styleClass="standard-button" text="< Previous" />
+                  <Label fx:id="monthLabel" styleClass="h2" text="Month Year" />
+                  <Button fx:id="nextButton" onAction="#handleNextMonth" styleClass="standard-button" text="Next >" />
+               </children>
+            </HBox>
          </children>
          <padding>
-            <Insets bottom="20.0" />
+            <Insets top="10.0" />
+         </padding>
+      </VBox>
+      <GridPane fx:id="calendarGrid" alignment="CENTER" styleClass="calendar-grid" VBox.vgrow="NEVER">
+        <columnConstraints>
+          <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
+          <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
+          <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
+          <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
+          <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
+          <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
+          <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
+          <ColumnConstraints halignment="CENTER" hgrow="NEVER" minWidth="20.0" prefWidth="20.0" />
+          <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="110.0" prefWidth="110.0" />
+        </columnConstraints>
+        <rowConstraints>
+          <RowConstraints minHeight="50.0" prefHeight="50.0" valignment="CENTER" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="60.0" prefHeight="60.0" valignment="CENTER" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="60.0" prefHeight="60.0" valignment="CENTER" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="60.0" prefHeight="60.0" valignment="CENTER" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="60.0" prefHeight="60.0" valignment="CENTER" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="60.0" prefHeight="60.0" valignment="CENTER" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="60.0" prefHeight="60.0" valignment="CENTER" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="60.0" prefHeight="60.0" valignment="CENTER" vgrow="SOMETIMES" />
+        </rowConstraints>
+         <children>
+            <Label text="MON" />
+            <Label text="TUE" GridPane.columnIndex="1" />
+            <Label text="WED" GridPane.columnIndex="2" />
+            <Label text="THU" GridPane.columnIndex="3" />
+            <Label text="FRI" GridPane.columnIndex="4" />
+            <Label text="SAT" GridPane.columnIndex="5" />
+            <Label text="SUN" GridPane.columnIndex="6" />
+            <Label text="Totals" GridPane.columnIndex="8" />
+         </children>
+      </GridPane>
+      <VBox styleClass="note-box" VBox.vgrow="ALWAYS">
+         <children>
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+               <children>
+                  <Label text="Equity Curve" styleClass="h3" HBox.hgrow="ALWAYS" />
+                  <Button onAction="#filterAll" styleClass="filter-button" text="All" />
+                  <Button onAction="#filterYear" styleClass="filter-button" text="Year" />
+                  <Button onAction="#filterMonth" styleClass="filter-button" text="Month" />
+               </children>
+               <padding>
+                  <Insets bottom="5.0" left="10.0" top="5.0" />
+               </padding>
+            </HBox>
+            <LineChart fx:id="equityChart" animated="false" createSymbols="true" legendVisible="false" prefHeight="400.0" styleClass="chart" VBox.vgrow="ALWAYS">
+               <xAxis>
+                <CategoryAxis side="BOTTOM" />
+              </xAxis>
+              <yAxis>
+                <NumberAxis side="LEFT" />
+              </yAxis>
+            </LineChart>
+         </children>
+      </VBox>
+      <HBox alignment="CENTER">
+         <children>
+            <Button onAction="#showYearOverview" styleClass="standard-button" text="Current Year Overview" />
+         </children>
+         <padding>
+            <Insets bottom="20.0" top="10.0" />
          </padding>
       </HBox>
-   </bottom>
-</BorderPane>
+   </children>
+   <padding>
+      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+   </padding>
+</VBox>
 """
 
-# 3. Corrected content for styles.css
+# 2. Corrected content for styles.css
 styles_css_content = r"""/* --- Global Styles --- */
 .root {
     -fx-font-family: "Fira Code Regular";
@@ -259,6 +132,17 @@ styles_css_content = r"""/* --- Global Styles --- */
 .scroll-bar:horizontal, .scroll-bar:vertical { -fx-background-color: -frame-bg-color; }
 .scroll-bar .thumb { -fx-background-color: -button-color; -fx-background-radius: 5; }
 
+/* --- Remove Focus Halo/Ring from all controls --- */
+*:focused { -fx-focus-color: transparent; -fx-faint-focus-color: transparent; }
+.tab-pane:focused .tab:selected .focus-indicator { -fx-border-color: transparent; }
+
+/* --- Custom Title Bar & Window Buttons --- */
+.title-bar { -fx-background-color: -sidebar-color; -fx-padding: 5 5 5 15; }
+.window-title { -fx-font-family: "Fira Code Bold"; -fx-font-size: 14px; -fx-text-fill: -soft-white-text; }
+.window-button, .window-button-close { -fx-background-color: -frame-bg-color; -fx-text-fill: -soft-white-text; -fx-font-family: "Fira Code Bold"; -fx-font-size: 14px; -fx-padding: 2px 12px 2px 12px; -fx-border-color: -border-color; -fx-border-radius: 5; -fx-background-radius: 5;}
+.window-button:hover { -fx-background-color: -sidebar-button-hover; }
+.window-button-close:hover { -fx-background-color: -negative-color; }
+
 /* --- Sidebar (Squared Corners) --- */
 .sidebar { -fx-background-color: -sidebar-color; -fx-pref-width: 220px; }
 .sidebar-title { -fx-font-family: "Fira Code Bold"; -fx-font-size: 20px; -fx-text-fill: white; }
@@ -268,33 +152,36 @@ styles_css_content = r"""/* --- Global Styles --- */
 .icon { -fx-fill: #A9B7D1; -fx-font-size: 1.2em; }
 .sidebar-button:hover .icon, .sidebar-button:selected .icon { -fx-fill: white; }
 
+/* --- Labels --- */
+.label { -fx-text-fill: -soft-white-text; -fx-font-family: "Fira Code Regular"; }
+.h1, .h2, .h3, .total-pnl-label, .note-date, .negative-text, .positive-text { -fx-font-family: "Fira Code Bold"; }
+.welcome-label { -fx-font-family: "Fira Code Bold"; -fx-font-size: 36px; -fx-text-fill: white; }
+.h1 { -fx-font-size: 24px; }
+.h2 { -fx-font-size: 20px; }
+.h3 { -fx-font-size: 16px; }
+.negative-text { -fx-text-fill: -negative-color; }
+.positive-text { -fx-text-fill: -positive-color; }
+.note-text { -fx-text-fill: -dim-white-text; }
+
 /* --- Settings Screen Tabs --- */
-.tab-pane { -fx-background-color: -app-bg-color; -fx-focus-color: transparent; -fx-faint-focus-color: transparent; }
-.tab-pane .tab-header-area .tab-header-background { -fx-background-color: -frame-bg-color; }
+.tab-pane .tab-header-area .tab-header-background { -fx-background-color: -frame-bg-color; -fx-border-color: -border-color; -fx-border-width: 0 0 1 0; }
 .tab-pane .tab { -fx-background-color: -frame-bg-color; -fx-background-insets: 0; -fx-background-radius: 5 5 0 0; -fx-padding: 8 20 8 20; }
-.tab-pane .tab:selected { -fx-background-color: -sidebar-color; }
-.tab-pane .tab:selected .focus-indicator { -fx-border-color: transparent; }
+.tab-pane .tab:selected { -fx-background-color: -sidebar-color; -fx-padding: 8 20 10 20; }
 .tab-pane .tab .tab-label { -fx-text-fill: -dim-white-text; -fx-font-family: "Fira Code Regular"; }
 .tab-pane .tab:selected .tab-label { -fx-text-fill: -soft-white-text; }
 .tab-pane > .tab-content-area { -fx-background-color: -sidebar-color; }
-
-/* --- CheckBox & ToggleButton --- */
-.check-box .text { -fx-fill: -soft-white-text; }
-.settings-toggle-button { -fx-background-color: -frame-bg-color; -fx-text-fill: -soft-white-text; -fx-border-color: -border-color; -fx-background-radius: 15; -fx-border-radius: 15; -fx-pref-width: 50; -fx-font-family: "Fira Code Bold"; }
-.settings-toggle-button:selected { -fx-background-color: -positive-color; -fx-border-color: -positive-color; }
 
 /* --- Text Fields & Areas (Dark Theme) --- */
 .text-field, .text-area { -fx-font-family: "Fira Code Regular"; -fx-background-color: -frame-bg-color; -fx-text-fill: -soft-white-text; -fx-font-size: 12px; -fx-background-radius: 8; -fx-border-color: -border-color; -fx-border-radius: 8; }
 .text-area .content { -fx-background-color: -frame-bg-color; }
 .text-area .scroll-pane .viewport { -fx-background-color: -frame-bg-color; }
-.description-area { -fx-font-size: 14px; }
 
 /* --- On-Top Widget (Dark Theme) --- */
 .on-top-widget { -fx-background-color: -frame-bg-color; -fx-background-radius: 8; -fx-border-color: -border-color; -fx-border-radius: 8; }
 
 /* --- Calendar & Chart (Dark Theme) --- */
 .calendar-grid { -fx-background-color: -sidebar-color; -fx-background-radius: 10; -fx-padding: 5; }
-.calendar-day-cell { -fx-border-color: #2a2a2a; -fx-background-color: -frame-bg-color; -fx-padding: 3; }
+.calendar-day-cell, .totals-cell { -fx-border-color: #2a2a2a; -fx-background-color: -frame-bg-color; -fx-padding: 3; -fx-border-width: 1px;}
 .positive-day { -fx-background-color: -positive-color; }
 .positive-day .label { -fx-text-fill: black; }
 .negative-day { -fx-background-color: -negative-color; }
@@ -302,7 +189,28 @@ styles_css_content = r"""/* --- Global Styles --- */
 .chart-plot-background { -fx-background-color: -frame-bg-color; }
 .axis { -fx-tick-label-fill: -dim-white-text; }
 
-/* Other styles omitted for brevity but should be kept in your file */
+/* --- General Button Styles --- */
+.button, .toggle-button { -fx-font-family: "Fira Code Bold"; -fx-text-fill: -soft-white-text; -fx-background-radius: 8; -fx-cursor: hand; -fx-border-width: 1px; -fx-border-color: -border-color; -fx-background-color: -frame-bg-color;}
+.button:hover, .toggle-button:hover { -fx-border-color: -button-color; -fx-background-color: -sidebar-button-hover;}
+.standard-button { -fx-font-size: 14px; -fx-padding: 8 15 8 15; -fx-background-color: -button-color; -fx-border-color: -button-color; }
+.standard-button:hover { -fx-background-color: -button-hover-color; }
+.exit-button { -fx-font-size: 14px; -fx-padding: 8 15 8 15; -fx-background-color: -negative-color; -fx-border-color: -negative-color;}
+.exit-button:hover { -fx-background-color: -negative-hover-color; }
+.ud-button { -fx-font-size: 11px; -fx-padding: 4 8 4 8; -fx-background-color: #503030; }
+.ud-button:hover { -fx-background-color: #704040; }
+.cancel-button { -fx-font-size: 12px; -fx-padding: 6 12 6 12; -fx-background-color: #424242; }
+.cancel-button:hover { -fx-background-color: #616161; }
+.back-button { -fx-background-color: transparent; -fx-text-fill: -dim-white-text; -fx-font-family: "Fira Code Regular"; -fx-font-size: 14px; -fx-border-radius: 8; -fx-padding: 6 12 6 12; }
+.back-button:hover { -fx-background-color: -sidebar-button-hover; -fx-text-fill: -soft-white-text; -fx-border-color: -button-color; }
+.icon-button { -fx-font-size: 12px; -fx-padding: 4 8 4 8; -fx-background-color: #424242; -fx-text-fill: -soft-white-text; }
+.icon-button:hover { -fx-background-color: #555; }
+
+/* --- Setup & Example Cards --- */
+.note-box { -fx-background-color: -frame-bg-color; -fx-background-radius: 10; -fx-padding: 10; -fx-border-color: -border-color; -fx-border-width: 1px;}
+.example-card { -fx-background-color: -frame-bg-color; -fx-padding: 20; -fx-background-radius: 8; -fx-border-color: -border-color; -fx-border-radius: 8; -fx-cursor: hand; }
+.example-card:hover { -fx-border-color: -button-hover-color; -fx-background-color: #1c1c1c; }
+.won-icon { -fx-icon-size: 32px; -fx-fill: -positive-color; }
+.lost-icon { -fx-icon-size: 32px; -fx-fill: -negative-color; }
 """
 
 # --- Python Script Logic ---
@@ -311,33 +219,13 @@ def apply_fixes():
     project_root = os.getcwd()
     
     # Define file paths
-    setups_controller_path = os.path.join(project_root, "src", "main", "java", "com", "tdf", "controllers", "SetupsViewController.java")
-    settings_fxml_path = os.path.join(project_root, "src", "main", "resources", "com", "tdf", "fxml", "Settings.fxml")
+    pnl_calendar_fxml_path = os.path.join(project_root, "src", "main", "resources", "com", "tdf", "fxml", "PnlCalendar.fxml")
     styles_css_path = os.path.join(project_root, "src", "main", "resources", "com", "tdf", "styles.css")
     
-    # Read the existing full CSS content
     try:
-        with open(styles_css_path, 'r', encoding='utf-8') as f:
-            full_css_content = f.read()
-    except IOError:
-        print(f"Could not read original styles.css. Starting with a fresh template.")
-        full_css_content = ""
-
-    # This is a simplified merge, you might need to manually merge if there are conflicts
-    # For this script, we'll overwrite specific sections.
-    # A more robust script would use regex to replace blocks.
-
-    # This is a simplified demonstration. The provided styles_css_content string contains a consolidated version.
-    # For simplicity, we will overwrite the whole file with the new complete version.
-
-    try:
-        with open(setups_controller_path, 'w', encoding='utf-8') as f:
-            f.write(setups_controller_content)
-        print(f"Successfully updated: {setups_controller_path}")
-
-        with open(settings_fxml_path, 'w', encoding='utf-8') as f:
-            f.write(settings_fxml_content)
-        print(f"Successfully updated: {settings_fxml_path}")
+        with open(pnl_calendar_fxml_path, 'w', encoding='utf-8') as f:
+            f.write(pnl_calendar_fxml_content)
+        print(f"Successfully updated: {pnl_calendar_fxml_path}")
 
         with open(styles_css_path, 'w', encoding='utf-8') as f:
             f.write(styles_css_content)

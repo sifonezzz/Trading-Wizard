@@ -12,12 +12,12 @@ import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
+import org.kordamp.ikonli.javafx.FontIcon;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class TradingFlowController implements Controller {
@@ -104,9 +104,12 @@ public class TradingFlowController implements Controller {
         tasksVBox.setMaxWidth(400);
         
         for (String task : settings.tasks) {
-            CheckBox cb = new CheckBox(task);
-            cb.setMaxWidth(Double.MAX_VALUE);
-            tasksVBox.getChildren().add(cb);
+            if (task.isBlank()) continue;
+            ToggleButton taskButton = new ToggleButton(task);
+            taskButton.getStyleClass().add("checklist-item");
+            taskButton.setMaxWidth(Double.MAX_VALUE);
+            taskButton.setGraphic(new FontIcon("fas-check"));
+            tasksVBox.getChildren().add(taskButton);
         }
         
         Button nextButton = new Button("Next");
@@ -114,11 +117,11 @@ public class TradingFlowController implements Controller {
         nextButton.setDisable(true);
         
         tasksVBox.getChildren().forEach(node -> {
-            if (node instanceof CheckBox) {
-                ((CheckBox) node).setOnAction(e -> {
+            if (node instanceof ToggleButton) {
+                ((ToggleButton) node).setOnAction(e -> {
                     boolean allChecked = tasksVBox.getChildren().stream()
-                        .filter(n -> n instanceof CheckBox)
-                        .allMatch(n -> ((CheckBox) n).isSelected());
+                        .filter(n -> n instanceof ToggleButton)
+                        .allMatch(n -> ((ToggleButton) n).isSelected());
                     nextButton.setDisable(!allChecked);
                 });
             }
@@ -132,14 +135,16 @@ public class TradingFlowController implements Controller {
     private void showSetups() {
         VBox container = new VBox(20);
         container.setAlignment(Pos.CENTER);
-        Label title = new Label("THESE ARE YOUR SETUPS, DO NOT IGNORE THEM");
+        Label title = new Label("Acknowledge Your Setups");
         title.getStyleClass().add("h2");
         title.setWrapText(true);
         
         VBox setupsVBox = new VBox(10);
+        setupsVBox.setMaxWidth(500);
         for(String setup : settings.setups) {
+            if (setup.isBlank()) continue;
             Button setupButton = new Button(setup);
-            setupButton.getStyleClass().add("standard-button");
+            setupButton.getStyleClass().add("setup-review-item");
             setupButton.setDisable(true);
             setupButton.setMaxWidth(Double.MAX_VALUE);
             setupsVBox.getChildren().add(setupButton);
@@ -150,19 +155,19 @@ public class TradingFlowController implements Controller {
         nextButton.setDisable(true);
         nextButton.setOnAction(e -> nextStep());
         
-        new Timeline(new KeyFrame(Duration.seconds(5), e -> setupsVBox.getChildren().forEach(node -> node.setDisable(false)))).play();
+        new Timeline(new KeyFrame(Duration.seconds(3), e -> setupsVBox.getChildren().forEach(node -> node.setDisable(false)))).play();
         
         AtomicInteger clickedCount = new AtomicInteger();
         setupsVBox.getChildren().forEach(node -> {
             ((Button)node).setOnAction(e -> {
                 node.setDisable(true);
-                node.setStyle("-fx-background-color: -positive-color;");
-                if (clickedCount.incrementAndGet() == settings.setups.size()) {
+                node.getStyleClass().add("acknowledged");
+                if (clickedCount.incrementAndGet() == setupsVBox.getChildren().size()) {
                     nextButton.setDisable(false);
                 }
             });
         });
-        
+
         container.getChildren().addAll(title, setupsVBox, nextButton);
         contentBox.getChildren().add(container);
     }
@@ -175,6 +180,7 @@ public class TradingFlowController implements Controller {
         
         VBox rulesVBox = new VBox(10);
         for(String rule : settings.rules) {
+            if(rule.isBlank()) continue;
             Label ruleLabel = new Label("- " + rule);
             ruleLabel.getStyleClass().add("rule-text");
             rulesVBox.getChildren().add(ruleLabel);
@@ -184,29 +190,25 @@ public class TradingFlowController implements Controller {
         nextButton.getStyleClass().add("standard-button");
         nextButton.setDisable(true);
         
-        // --- THIS IS THE FIX ---
-        // Use the new setting for the countdown duration
         int countdownSeconds = settings.rulesScreenSeconds;
         IntegerProperty countdown = new SimpleIntegerProperty(countdownSeconds);
-        nextButton.textProperty().bind(countdown.asString("Next (%d)"));
+        nextButton.textProperty().bind(countdown.asString("Acknowledge (%d)"));
         
         Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
             countdown.set(countdown.get() - 1);
             if (countdown.get() <= 0) {
                 nextButton.textProperty().unbind();
-                nextButton.setText("Next");
+                nextButton.setText("Start Trading");
                 nextButton.setDisable(false);
             }
         }));
         timeline.setCycleCount(countdownSeconds);
-        // -----------------------
         timeline.play();
         
         nextButton.setOnAction(e -> {
             timeline.stop();
             nextStep();
         });
-
         container.getChildren().addAll(title, rulesVBox, nextButton);
         contentBox.getChildren().add(container);
     }
