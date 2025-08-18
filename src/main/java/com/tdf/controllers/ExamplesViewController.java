@@ -120,40 +120,22 @@ public class ExamplesViewController implements Controller {
     private void handleDeleteExample(ExampleImage exampleToDelete) {
         Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
         confirmation.setTitle("Delete Example");
-        confirmation.setContentText("This will permanently delete the example image. Are you sure?");
+        // <<< FIX 1: Set a clear header text.
+        confirmation.setHeaderText("This will permanently delete the example image. Are you sure?");
+        confirmation.setContentText("This action cannot be undone.");
 
-        // --- NEW: Create and apply a custom title bar ---
+        // --- THIS IS THE FIX ---
+        // Get the dialog's window (Stage)
         Stage dialogStage = (Stage) confirmation.getDialogPane().getScene().getWindow();
-        dialogStage.initStyle(StageStyle.UNDECORATED);
+        
+        // <<< FIX 2: Set the owner to the main app window to ensure it's centered.
+        dialogStage.initOwner(mainApp.getPrimaryStage());
 
-        HBox titleBar = new HBox();
-        titleBar.setAlignment(Pos.CENTER_LEFT);
-        titleBar.getStyleClass().add("title-bar");
-
-        Label titleLabel = new Label("Confirm Deletion");
-        titleLabel.getStyleClass().add("window-title");
-        Pane spacer = new Pane();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        Button closeButton = new Button("X");
-        closeButton.getStyleClass().add("window-button-close");
-        closeButton.setOnAction(e -> dialogStage.close());
-        titleBar.getChildren().addAll(titleLabel, spacer, closeButton);
-
-        titleBar.setOnMousePressed(event -> {
-            xOffset = event.getSceneX();
-            yOffset = event.getSceneY();
-        });
-        titleBar.setOnMouseDragged(event -> {
-            dialogStage.setX(event.getScreenX() - xOffset);
-            dialogStage.setY(event.getScreenY() - yOffset);
-        });
-
+        // Apply the custom dark theme styling from styles.css
         DialogPane dialogPane = confirmation.getDialogPane();
         dialogPane.getStylesheets().add(Objects.requireNonNull(mainApp.getClass().getResource("/com/tdf/styles.css")).toExternalForm());
         dialogPane.getStyleClass().add("main-view");
-        dialogPane.setGraphic(titleBar); // Set the custom title bar
-        dialogPane.setHeaderText(null); // Remove default header
-        // ---------------------------------------------------
+        // --- END FIX ---
 
         Optional<ButtonType> result = confirmation.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
@@ -162,7 +144,7 @@ public class ExamplesViewController implements Controller {
             } else {
                 currentSetup.getLostExamples().remove(exampleToDelete);
             }
-            
+
             try {
                 File imageFile = new File(MainApp.getDataManager().getBaseDir(), exampleToDelete.getImagePath());
                 Files.deleteIfExists(imageFile.toPath());

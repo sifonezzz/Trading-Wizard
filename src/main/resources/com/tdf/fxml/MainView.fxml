@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<StackPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.tdf.controllers.MainViewController">
+<StackPane fx:id="rootStackPane" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.tdf.controllers.MainViewController">
    <children>
       <BorderPane fx:id="rootPane" prefHeight="1000.0" prefWidth="1200.0" styleClass="main-view">
          <left>
@@ -45,7 +45,6 @@
                               <FontIcon iconLiteral="fas-calendar-alt" styleClass="icon" />
                            </graphic>
                         </ToggleButton>
-                        <!-- NEW "SETUPS SAMPLES" BUTTON -->
                         <ToggleButton maxWidth="Infinity" onAction="#showSetups" styleClass="sidebar-button" text="Setups Samples" toggleGroup="$navigationGroup">
                            <graphic>
                               <FontIcon iconLiteral="fas-lightbulb" styleClass="icon" />

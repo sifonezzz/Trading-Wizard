@@ -3,6 +3,8 @@ package com.tdf.controllers;
 import com.tdf.Controller;
 import com.tdf.MainApp;
 import javafx.animation.FadeTransition;
+import javafx.animation.ParallelTransition;
+import javafx.animation.PathTransition;
 import javafx.animation.SequentialTransition;
 import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
@@ -11,9 +13,14 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.QuadCurve;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -21,6 +28,7 @@ import java.io.IOException;
 
 public class MainViewController implements Controller {
 
+    @FXML private StackPane rootStackPane; // <-- Crucial new field
     @FXML private BorderPane rootPane;
     @FXML private BorderPane contentPane;
     @FXML private HBox titleBar;
@@ -32,7 +40,7 @@ public class MainViewController implements Controller {
     private double xOffset = 0;
     private double yOffset = 0;
     private static final double SIDEBAR_WIDTH = 220.0;
-
+    
     @Override
     public void setMainApp(MainApp mainApp) {
         this.mainApp = mainApp;
@@ -49,7 +57,6 @@ public class MainViewController implements Controller {
             stage.setX(event.getScreenX() - xOffset);
             stage.setY(event.getScreenY() - yOffset);
         });
-
         sidebar.setTranslateX(-SIDEBAR_WIDTH);
         
         Platform.runLater(() -> triggerWelcomeAnimation("Welcome"));
@@ -71,18 +78,44 @@ public class MainViewController implements Controller {
         welcomeLabel.setText(message);
         welcomeLabel.setVisible(true);
 
+        // --- Comet Animation ---
+        Circle comet = new Circle(4, Color.WHITE);
+        comet.setEffect(new DropShadow(15, Color.CYAN));
+        rootStackPane.getChildren().add(comet);
+
+        // Define the curved path for the comet
+        QuadCurve curve = new QuadCurve();
+        curve.setStartX(rootStackPane.getWidth() + 20); // Start off-screen top-right
+        curve.setStartY(-20);
+        curve.setControlX(rootStackPane.getWidth() * 0.5); // Control point for curvature
+        curve.setControlY(rootStackPane.getHeight() * 0.5);
+        curve.setEndX(-20); // End off-screen bottom-left
+        curve.setEndY(rootStackPane.getHeight() + 20);
+
+        PathTransition pathTransition = new PathTransition();
+        pathTransition.setNode(comet);
+        pathTransition.setPath(curve);
+        pathTransition.setDuration(Duration.millis(800)); // Fast animation
+        pathTransition.setCycleCount(1);
+        
+        // --- Original Welcome Label Animation ---
         FadeTransition fadeIn = new FadeTransition(Duration.millis(500), welcomeLabel);
         fadeIn.setFromValue(0);
         fadeIn.setToValue(1);
+
+        // Run comet and label fade-in at the same time
+        ParallelTransition parallelTransition = new ParallelTransition(fadeIn, pathTransition);
 
         FadeTransition fadeOut = new FadeTransition(Duration.millis(500), welcomeLabel);
         fadeOut.setFromValue(1);
         fadeOut.setToValue(0);
         fadeOut.setDelay(Duration.seconds(1));
 
-        SequentialTransition sequence = new SequentialTransition(fadeIn, fadeOut);
+        // Create the final animation sequence
+        SequentialTransition sequence = new SequentialTransition(parallelTransition, fadeOut);
         sequence.setOnFinished(e -> {
             welcomeLabel.setVisible(false);
+            rootStackPane.getChildren().remove(comet); // Clean up the comet node
             showDashboard();
             dashboardButton.setSelected(true);
             animateSidebar(true);
@@ -92,7 +125,6 @@ public class MainViewController implements Controller {
     
     private void loadView(String fxmlFile) {
         Node currentView = contentPane.getCenter();
-
         Runnable loadAction = () -> {
             try {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/tdf/fxml/" + fxmlFile));
@@ -105,7 +137,6 @@ public class MainViewController implements Controller {
 
                 newView.setOpacity(0);
                 contentPane.setCenter(newView);
-                
                 Platform.runLater(() -> {
                     FadeTransition fadeIn = new FadeTransition(Duration.millis(250), newView);
                     fadeIn.setFromValue(0);
@@ -129,14 +160,8 @@ public class MainViewController implements Controller {
         }
     }
     
-    /**
-     * Public method to allow external classes (like MainApp) to set the content pane.
-     * This is used for navigating to views that require data to be passed, like SetupDetail.
-     * @param node The view to display.
-     */
     public void setContent(Node node) {
         Node currentView = contentPane.getCenter();
-        
         Runnable setAction = () -> {
             node.setOpacity(0);
             contentPane.setCenter(node);
@@ -157,14 +182,12 @@ public class MainViewController implements Controller {
         }
     }
 
-
-    // --- Navigation Methods ---
     @FXML public void showDashboard() { loadView("Dashboard.fxml"); }
     @FXML private void showJournal() { loadView("NotesView.fxml"); }
     @FXML public void showCalendar() { loadView("PnlCalendar.fxml"); }
     @FXML public void showSetups() { loadView("SetupsView.fxml"); }
     @FXML private void showSettings() { loadView("Settings.fxml"); }
-    @FXML public void showYearOverview() { loadView("YearOverview.fxml"); }
+    @FXML public void showYearOverview() { load_View("YearOverview.fxml"); }
     public void showAddWidgets() { loadView("AddWidgets.fxml"); }
 
     @FXML 
@@ -209,7 +232,6 @@ public class MainViewController implements Controller {
         triggerWelcomeAnimation("Welcome Back");
     }
 
-    // --- Window Control Methods ---
     @FXML private void handleClose() { Platform.exit(); }
     @FXML private void handleMinimize() { ((Stage) rootPane.getScene().getWindow()).setIconified(true); }
     @FXML private void handleMaximize() {
