@@ -2,237 +2,78 @@ import os
 
 # --- File Contents ---
 
-# 1. Corrected content for PnlCalendar.fxml
-pnl_calendar_fxml_content = r"""<?xml version="1.0" encoding="UTF-8"?>
+# This string contains only the missing styles for the Trading Flow screens.
+trading_flow_styles = r"""
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.chart.CategoryAxis?>
-<?import javafx.scene.chart.LineChart?>
-<?import javafx.scene.chart.NumberAxis?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.RowConstraints?>
-<?import javafx.scene.layout.VBox?>
-
-<VBox alignment="TOP_CENTER" spacing="20.0" styleClass="main-view" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.tdf.controllers.PnlCalendarController">
-   <children>
-      <VBox alignment="CENTER" spacing="10.0">
-         <children>
-            <Label styleClass="h1" text="PNL Calendar" />
-            <HBox alignment="CENTER" spacing="20.0">
-               <children>
-                  <Button fx:id="prevButton" onAction="#handlePrevMonth" styleClass="standard-button" text="< Previous" />
-                  <Label fx:id="monthLabel" styleClass="h2" text="Month Year" />
-                  <Button fx:id="nextButton" onAction="#handleNextMonth" styleClass="standard-button" text="Next >" />
-               </children>
-            </HBox>
-         </children>
-         <padding>
-            <Insets top="10.0" />
-         </padding>
-      </VBox>
-      <GridPane fx:id="calendarGrid" alignment="CENTER" styleClass="calendar-grid" VBox.vgrow="NEVER">
-        <columnConstraints>
-          <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
-          <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
-          <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
-          <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
-          <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
-          <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
-          <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
-          <ColumnConstraints halignment="CENTER" hgrow="NEVER" minWidth="20.0" prefWidth="20.0" />
-          <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="110.0" prefWidth="110.0" />
-        </columnConstraints>
-        <rowConstraints>
-          <RowConstraints minHeight="50.0" prefHeight="50.0" valignment="CENTER" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="60.0" prefHeight="60.0" valignment="CENTER" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="60.0" prefHeight="60.0" valignment="CENTER" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="60.0" prefHeight="60.0" valignment="CENTER" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="60.0" prefHeight="60.0" valignment="CENTER" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="60.0" prefHeight="60.0" valignment="CENTER" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="60.0" prefHeight="60.0" valignment="CENTER" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="60.0" prefHeight="60.0" valignment="CENTER" vgrow="SOMETIMES" />
-        </rowConstraints>
-         <children>
-            <Label text="MON" />
-            <Label text="TUE" GridPane.columnIndex="1" />
-            <Label text="WED" GridPane.columnIndex="2" />
-            <Label text="THU" GridPane.columnIndex="3" />
-            <Label text="FRI" GridPane.columnIndex="4" />
-            <Label text="SAT" GridPane.columnIndex="5" />
-            <Label text="SUN" GridPane.columnIndex="6" />
-            <Label text="Totals" GridPane.columnIndex="8" />
-         </children>
-      </GridPane>
-      <VBox styleClass="note-box" VBox.vgrow="ALWAYS">
-         <children>
-            <HBox alignment="CENTER_LEFT" spacing="10.0">
-               <children>
-                  <Label text="Equity Curve" styleClass="h3" HBox.hgrow="ALWAYS" />
-                  <Button onAction="#filterAll" styleClass="filter-button" text="All" />
-                  <Button onAction="#filterYear" styleClass="filter-button" text="Year" />
-                  <Button onAction="#filterMonth" styleClass="filter-button" text="Month" />
-               </children>
-               <padding>
-                  <Insets bottom="5.0" left="10.0" top="5.0" />
-               </padding>
-            </HBox>
-            <LineChart fx:id="equityChart" animated="false" createSymbols="true" legendVisible="false" prefHeight="400.0" styleClass="chart" VBox.vgrow="ALWAYS">
-               <xAxis>
-                <CategoryAxis side="BOTTOM" />
-              </xAxis>
-              <yAxis>
-                <NumberAxis side="LEFT" />
-              </yAxis>
-            </LineChart>
-         </children>
-      </VBox>
-      <HBox alignment="CENTER">
-         <children>
-            <Button onAction="#showYearOverview" styleClass="standard-button" text="Current Year Overview" />
-         </children>
-         <padding>
-            <Insets bottom="20.0" top="10.0" />
-         </padding>
-      </HBox>
-   </children>
-   <padding>
-      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-   </padding>
-</VBox>
-"""
-
-# 2. Corrected content for styles.css
-styles_css_content = r"""/* --- Global Styles --- */
-.root {
+/* --- FIX: Added Missing Styles for Trading Flow --- */
+.checklist-item {
+    -fx-background-color: -frame-bg-color;
+    -fx-border-color: -border-color;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-text-fill: -soft-white-text;
     -fx-font-family: "Fira Code Regular";
-    -app-bg-color: #030303;
-    -frame-bg-color: #101010;
-    -sidebar-color: #181818;
-    -sidebar-button-hover: #2a2a2a;
-    -sidebar-button-selected: #224a6e;
-    -button-color: #1F6AA5;
-    -button-hover-color: #2988d2;
-    -positive-color: #26A69A;
-    -negative-color: #EF5350;
-    -negative-hover-color: #C62828;
-    -soft-white-text: #EAEAEA;
-    -dim-white-text: #b0b0b0;
-    -border-color: #333;
+    -fx-font-size: 14px;
+    -fx-padding: 15;
+    -fx-alignment: CENTER_LEFT;
+    -fx-graphic-text-gap: 10;
 }
-
-/* --- Base Styles --- */
-.main-view, .content-pane { -fx-background-color: -app-bg-color; }
-.scroll-pane { -fx-background-color: transparent; }
-.scroll-pane > .viewport { -fx-background-color: transparent; }
-.scroll-pane > .corner { -fx-background-color: transparent; }
-.scroll-bar:horizontal, .scroll-bar:vertical { -fx-background-color: -frame-bg-color; }
-.scroll-bar .thumb { -fx-background-color: -button-color; -fx-background-radius: 5; }
-
-/* --- Remove Focus Halo/Ring from all controls --- */
-*:focused { -fx-focus-color: transparent; -fx-faint-focus-color: transparent; }
-.tab-pane:focused .tab:selected .focus-indicator { -fx-border-color: transparent; }
-
-/* --- Custom Title Bar & Window Buttons --- */
-.title-bar { -fx-background-color: -sidebar-color; -fx-padding: 5 5 5 15; }
-.window-title { -fx-font-family: "Fira Code Bold"; -fx-font-size: 14px; -fx-text-fill: -soft-white-text; }
-.window-button, .window-button-close { -fx-background-color: -frame-bg-color; -fx-text-fill: -soft-white-text; -fx-font-family: "Fira Code Bold"; -fx-font-size: 14px; -fx-padding: 2px 12px 2px 12px; -fx-border-color: -border-color; -fx-border-radius: 5; -fx-background-radius: 5;}
-.window-button:hover { -fx-background-color: -sidebar-button-hover; }
-.window-button-close:hover { -fx-background-color: -negative-color; }
-
-/* --- Sidebar (Squared Corners) --- */
-.sidebar { -fx-background-color: -sidebar-color; -fx-pref-width: 220px; }
-.sidebar-title { -fx-font-family: "Fira Code Bold"; -fx-font-size: 20px; -fx-text-fill: white; }
-.sidebar-button { -fx-background-color: transparent; -fx-text-fill: #A9B7D1; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 10 10 10 20; -fx-background-radius: 0; }
-.sidebar-button:hover { -fx-background-color: -sidebar-button-hover; -fx-text-fill: white; }
-.sidebar-button:selected { -fx-background-color: -sidebar-button-selected; -fx-text-fill: white; }
-.icon { -fx-fill: #A9B7D1; -fx-font-size: 1.2em; }
-.sidebar-button:hover .icon, .sidebar-button:selected .icon { -fx-fill: white; }
-
-/* --- Labels --- */
-.label { -fx-text-fill: -soft-white-text; -fx-font-family: "Fira Code Regular"; }
-.h1, .h2, .h3, .total-pnl-label, .note-date, .negative-text, .positive-text { -fx-font-family: "Fira Code Bold"; }
-.welcome-label { -fx-font-family: "Fira Code Bold"; -fx-font-size: 36px; -fx-text-fill: white; }
-.h1 { -fx-font-size: 24px; }
-.h2 { -fx-font-size: 20px; }
-.h3 { -fx-font-size: 16px; }
-.negative-text { -fx-text-fill: -negative-color; }
-.positive-text { -fx-text-fill: -positive-color; }
-.note-text { -fx-text-fill: -dim-white-text; }
-
-/* --- Settings Screen Tabs --- */
-.tab-pane .tab-header-area .tab-header-background { -fx-background-color: -frame-bg-color; -fx-border-color: -border-color; -fx-border-width: 0 0 1 0; }
-.tab-pane .tab { -fx-background-color: -frame-bg-color; -fx-background-insets: 0; -fx-background-radius: 5 5 0 0; -fx-padding: 8 20 8 20; }
-.tab-pane .tab:selected { -fx-background-color: -sidebar-color; -fx-padding: 8 20 10 20; }
-.tab-pane .tab .tab-label { -fx-text-fill: -dim-white-text; -fx-font-family: "Fira Code Regular"; }
-.tab-pane .tab:selected .tab-label { -fx-text-fill: -soft-white-text; }
-.tab-pane > .tab-content-area { -fx-background-color: -sidebar-color; }
-
-/* --- Text Fields & Areas (Dark Theme) --- */
-.text-field, .text-area { -fx-font-family: "Fira Code Regular"; -fx-background-color: -frame-bg-color; -fx-text-fill: -soft-white-text; -fx-font-size: 12px; -fx-background-radius: 8; -fx-border-color: -border-color; -fx-border-radius: 8; }
-.text-area .content { -fx-background-color: -frame-bg-color; }
-.text-area .scroll-pane .viewport { -fx-background-color: -frame-bg-color; }
-
-/* --- On-Top Widget (Dark Theme) --- */
-.on-top-widget { -fx-background-color: -frame-bg-color; -fx-background-radius: 8; -fx-border-color: -border-color; -fx-border-radius: 8; }
-
-/* --- Calendar & Chart (Dark Theme) --- */
-.calendar-grid { -fx-background-color: -sidebar-color; -fx-background-radius: 10; -fx-padding: 5; }
-.calendar-day-cell, .totals-cell { -fx-border-color: #2a2a2a; -fx-background-color: -frame-bg-color; -fx-padding: 3; -fx-border-width: 1px;}
-.positive-day { -fx-background-color: -positive-color; }
-.positive-day .label { -fx-text-fill: black; }
-.negative-day { -fx-background-color: -negative-color; }
-.negative-day .label { -fx-text-fill: black; }
-.chart-plot-background { -fx-background-color: -frame-bg-color; }
-.axis { -fx-tick-label-fill: -dim-white-text; }
-
-/* --- General Button Styles --- */
-.button, .toggle-button { -fx-font-family: "Fira Code Bold"; -fx-text-fill: -soft-white-text; -fx-background-radius: 8; -fx-cursor: hand; -fx-border-width: 1px; -fx-border-color: -border-color; -fx-background-color: -frame-bg-color;}
-.button:hover, .toggle-button:hover { -fx-border-color: -button-color; -fx-background-color: -sidebar-button-hover;}
-.standard-button { -fx-font-size: 14px; -fx-padding: 8 15 8 15; -fx-background-color: -button-color; -fx-border-color: -button-color; }
-.standard-button:hover { -fx-background-color: -button-hover-color; }
-.exit-button { -fx-font-size: 14px; -fx-padding: 8 15 8 15; -fx-background-color: -negative-color; -fx-border-color: -negative-color;}
-.exit-button:hover { -fx-background-color: -negative-hover-color; }
-.ud-button { -fx-font-size: 11px; -fx-padding: 4 8 4 8; -fx-background-color: #503030; }
-.ud-button:hover { -fx-background-color: #704040; }
-.cancel-button { -fx-font-size: 12px; -fx-padding: 6 12 6 12; -fx-background-color: #424242; }
-.cancel-button:hover { -fx-background-color: #616161; }
-.back-button { -fx-background-color: transparent; -fx-text-fill: -dim-white-text; -fx-font-family: "Fira Code Regular"; -fx-font-size: 14px; -fx-border-radius: 8; -fx-padding: 6 12 6 12; }
-.back-button:hover { -fx-background-color: -sidebar-button-hover; -fx-text-fill: -soft-white-text; -fx-border-color: -button-color; }
-.icon-button { -fx-font-size: 12px; -fx-padding: 4 8 4 8; -fx-background-color: #424242; -fx-text-fill: -soft-white-text; }
-.icon-button:hover { -fx-background-color: #555; }
-
-/* --- Setup & Example Cards --- */
-.note-box { -fx-background-color: -frame-bg-color; -fx-background-radius: 10; -fx-padding: 10; -fx-border-color: -border-color; -fx-border-width: 1px;}
-.example-card { -fx-background-color: -frame-bg-color; -fx-padding: 20; -fx-background-radius: 8; -fx-border-color: -border-color; -fx-border-radius: 8; -fx-cursor: hand; }
-.example-card:hover { -fx-border-color: -button-hover-color; -fx-background-color: #1c1c1c; }
-.won-icon { -fx-icon-size: 32px; -fx-fill: -positive-color; }
-.lost-icon { -fx-icon-size: 32px; -fx-fill: -negative-color; }
+.checklist-item .ikonli-font-icon {
+    -fx-icon-color: transparent;
+    -fx-icon-size: 18;
+}
+.checklist-item:selected {
+    -fx-border-color: -positive-color;
+    -fx-text-fill: -dim-white-text;
+    -fx-font-family: "Fira Code Bold";
+}
+.checklist-item:selected .ikonli-font-icon {
+    -fx-icon-color: -positive-color;
+}
+.setup-review-item {
+    -fx-background-color: -frame-bg-color;
+    -fx-border-color: -border-color;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-text-fill: -soft-white-text;
+    -fx-font-family: "Fira Code Regular";
+    -fx-font-size: 14px;
+    -fx-padding: 15;
+    -fx-alignment: CENTER;
+}
+.setup-review-item:hover {
+    -fx-border-color: -button-color;
+}
+.setup-review-item:disabled {
+    -fx-opacity: 1.0;
+}
+.setup-review-item.acknowledged {
+    -fx-background-color: -positive-color;
+    -fx-text-fill: white;
+    -fx-font-family: "Fira Code Bold";
+    -fx-border-color: -positive-color;
+}
 """
 
 # --- Python Script Logic ---
 
 def apply_fixes():
+    """
+    Appends the missing trading flow styles to the end of the styles.css file.
+    """
     project_root = os.getcwd()
     
-    # Define file paths
-    pnl_calendar_fxml_path = os.path.join(project_root, "src", "main", "resources", "com", "tdf", "fxml", "PnlCalendar.fxml")
+    # Define file path
     styles_css_path = os.path.join(project_root, "src", "main", "resources", "com", "tdf", "styles.css")
     
     try:
-        with open(pnl_calendar_fxml_path, 'w', encoding='utf-8') as f:
-            f.write(pnl_calendar_fxml_content)
-        print(f"Successfully updated: {pnl_calendar_fxml_path}")
-
-        with open(styles_css_path, 'w', encoding='utf-8') as f:
-            f.write(styles_css_content)
-        print(f"Successfully updated: {styles_css_path}")
+        # Open the file in append mode ('a') to add the new style without deleting existing content
+        with open(styles_css_path, 'a', encoding='utf-8') as f:
+            f.write(trading_flow_styles)
+        print(f"Successfully fixed trading flow styles in: {styles_css_path}")
 
     except IOError as e:
-        print(f"An error occurred while writing to the files: {e}")
+        print(f"An error occurred while writing to the file: {e}")
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
 
