@@ -9,17 +9,27 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
 <BorderPane styleClass="main-view" prefHeight="950.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.tdf.controllers.YearOverviewController">
    <top>
-      <VBox alignment="CENTER" spacing="10.0" BorderPane.alignment="CENTER">
+      <VBox alignment="CENTER" spacing="5.0">
          <children>
-            <Label fx:id="yearLabel" styleClass="h1" text="2025 PNL Overview" />
+            <StackPane>
+               <children>
+                  <Label fx:id="yearLabel" styleClass="h1" text="2025 PNL Overview" StackPane.alignment="CENTER" />
+                  <Button onAction="#handleBackToMenu" styleClass="back-button" text="&lt; Back" StackPane.alignment="CENTER_LEFT">
+                     <StackPane.margin>
+                        <Insets left="20.0" />
+                     </StackPane.margin>
+                  </Button>
+               </children>
+            </StackPane>
             <Label fx:id="totalPnlLabel" styleClass="h2" text="Total PNL: $0.00" />
          </children>
          <padding>
-            <Insets top="20.0" bottom="10.0" />
+            <Insets bottom="10.0" top="20.0" />
          </padding>
       </VBox>
    </top>
@@ -45,14 +55,4 @@
          </content>
       </ScrollPane>
    </center>
-   <bottom>
-      <HBox alignment="CENTER" BorderPane.alignment="CENTER">
-         <children>
-            <Button onAction="#handleBackToMenu" styleClass="standard-button" text="&lt; Back to PNL Calendar" />
-         </children>
-         <padding>
-            <Insets bottom="20.0" top="10.0" />
-         </padding>
-      </HBox>
-   </bottom>
 </BorderPane>

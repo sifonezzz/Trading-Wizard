@@ -17,12 +17,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.File;
@@ -41,8 +38,6 @@ public class ExamplesViewController implements Controller {
     private MainApp mainApp;
     private SetupSample currentSetup;
     private String exampleType; // "Won" or "Lost"
-    private double xOffset = 0;
-    private double yOffset = 0;
 
     @Override
     public void setMainApp(MainApp mainApp) {
@@ -61,27 +56,27 @@ public class ExamplesViewController implements Controller {
         List<ExampleImage> examples = "Won".equals(exampleType) ? currentSetup.getWonExamples() : currentSetup.getLostExamples();
 
         if (examples.isEmpty()) {
-            examplesPane.getChildren().add(new Label("No examples added yet."));
+            Label noExamplesLabel = new Label("No examples added yet. Click 'Add New Example' to start.");
+            noExamplesLabel.getStyleClass().add("h3");
+            examplesPane.getChildren().add(noExamplesLabel);
             return;
         }
 
         for (ExampleImage example : examples) {
             File imageFile = new File(MainApp.getDataManager().getBaseDir(), example.getImagePath());
             if (imageFile.exists()) {
-                VBox imageBox = new VBox(5);
-                imageBox.getStyleClass().add("note-box");
-                imageBox.setAlignment(Pos.CENTER);
+                VBox cardVBox = new VBox(10);
+                cardVBox.getStyleClass().add("setup-box"); // Re-use the styled, interactive box
+                cardVBox.setPrefWidth(320);
 
+                // --- Image with Hover Overlay ---
                 ImageView imageView = new ImageView(new Image(imageFile.toURI().toString()));
                 imageView.setFitWidth(300);
                 imageView.setPreserveRatio(true);
-                
-                Label tagsLabel = new Label("Tags: " + String.join(", ", example.getTags()));
-                tagsLabel.setWrapText(true);
 
                 Button viewButton = new Button("", new FontIcon("fas-expand-arrows-alt"));
                 viewButton.getStyleClass().add("image-action-button");
-                viewButton.setOnAction(e -> showMaximizedImage(new Image(imageFile.toURI().toString())));
+                viewButton.setOnAction(e -> showMaximizedImage(imageView.getImage()));
 
                 Button deleteButton = new Button("", new FontIcon("fas-trash-alt"));
                 deleteButton.getStyleClass().addAll("image-action-button", "delete-button");
@@ -89,10 +84,33 @@ public class ExamplesViewController implements Controller {
                 
                 HBox buttonBox = new HBox(10, viewButton, deleteButton);
                 buttonBox.setAlignment(Pos.CENTER);
-                HBox.setMargin(buttonBox, new Insets(5, 0, 0, 0));
+                
+                StackPane imageOverlayPane = new StackPane(buttonBox);
+                imageOverlayPane.getStyleClass().add("image-actions-overlay");
+                
+                StackPane imageContainer = new StackPane(imageView, imageOverlayPane);
+                imageContainer.getStyleClass().add("image-container");
+                // --- End Image Section ---
 
-                imageBox.getChildren().addAll(imageView, tagsLabel, buttonBox);
-                examplesPane.getChildren().add(imageBox);
+                // --- Tag Display ---
+                FlowPane tagsPane = new FlowPane(5, 5);
+                for (String tag : example.getTags()) {
+                    if (tag.isBlank()) continue;
+                    Label tagLabel = new Label(tag);
+                    tagLabel.getStyleClass().add("tag-label");
+                    // Add specific grade styles
+                    switch (tag.toUpperCase()) {
+                        case "A+" -> tagLabel.getStyleClass().add("grade-a-plus");
+                        case "A" -> tagLabel.getStyleClass().add("grade-a");
+                        case "B+" -> tagLabel.getStyleClass().add("grade-b-plus");
+                        case "C+" -> tagLabel.getStyleClass().add("grade-c-plus");
+                    }
+                    tagsPane.getChildren().add(tagLabel);
+                }
+                // --- End Tag Display ---
+
+                cardVBox.getChildren().addAll(imageContainer, tagsPane);
+                examplesPane.getChildren().add(cardVBox);
             }
         }
     }
@@ -120,22 +138,15 @@ public class ExamplesViewController implements Controller {
     private void handleDeleteExample(ExampleImage exampleToDelete) {
         Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
         confirmation.setTitle("Delete Example");
-        // <<< FIX 1: Set a clear header text.
-        confirmation.setHeaderText("This will permanently delete the example image. Are you sure?");
-        confirmation.setContentText("This action cannot be undone.");
+        confirmation.setHeaderText("This will permanently delete the example image.");
+        confirmation.setContentText("This action cannot be undone. Are you sure?");
 
-        // --- THIS IS THE FIX ---
-        // Get the dialog's window (Stage)
         Stage dialogStage = (Stage) confirmation.getDialogPane().getScene().getWindow();
-        
-        // <<< FIX 2: Set the owner to the main app window to ensure it's centered.
         dialogStage.initOwner(mainApp.getPrimaryStage());
-
-        // Apply the custom dark theme styling from styles.css
+        
         DialogPane dialogPane = confirmation.getDialogPane();
         dialogPane.getStylesheets().add(Objects.requireNonNull(mainApp.getClass().getResource("/com/tdf/styles.css")).toExternalForm());
         dialogPane.getStyleClass().add("main-view");
-        // --- END FIX ---
 
         Optional<ButtonType> result = confirmation.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
@@ -144,7 +155,7 @@ public class ExamplesViewController implements Controller {
             } else {
                 currentSetup.getLostExamples().remove(exampleToDelete);
             }
-
+            
             try {
                 File imageFile = new File(MainApp.getDataManager().getBaseDir(), exampleToDelete.getImagePath());
                 Files.deleteIfExists(imageFile.toPath());

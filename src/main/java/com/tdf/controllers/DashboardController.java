@@ -7,61 +7,207 @@ import com.tdf.data.Note;
 import com.tdf.data.PnlEntry;
 import javafx.animation.FadeTransition;
 import javafx.fxml.FXML;
+import javafx.geometry.Bounds;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.FlowPane;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.LineTo;
+import javafx.scene.shape.MoveTo;
+import javafx.scene.shape.Path;
 import javafx.util.Duration;
 
+import java.awt.Point;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.WeekFields;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 public class DashboardController implements Controller {
 
     @FXML private VBox welcomePane;
-    @FXML private FlowPane widgetPane;
+    @FXML private GridPane widgetPane;
     @FXML private Button smallAddButton;
-    
+    @FXML private Button modifyLayoutButton;
+
     private MainApp mainApp;
     private DataManager dataManager;
+    private boolean isModifyMode = false;
+    private VBox draggedWidget = null;
+
+    private static final int NUM_COLUMNS = 3;
+    private static final int NUM_ROWS = 3; // Define a max grid size for placeholders
 
     @Override
     public void setMainApp(MainApp mainApp) {
         this.mainApp = mainApp;
         this.dataManager = MainApp.getDataManager();
         buildDashboard();
-
-        
     }
-    
+
+     private void initializeGrid() {
+        // Bind the grid's height to the scroll pane's viewport height to make it fill the space
+        widgetPane.prefHeightProperty().bind(dashboardScrollPane.viewportBoundsProperty().map(Bounds::getHeight));
+
+        // Setup column constraints to be of equal width
+        widgetPane.getColumnConstraints().clear();
+        for (int i = 0; i < NUM_COLUMNS; i++) {
+            ColumnConstraints colConst = new ColumnConstraints();
+            colConst.setPercentWidth(100.0 / NUM_COLUMNS);
+            widgetPane.getColumnConstraints().add(colConst);
+        }
+
+        // Setup row constraints to be of equal height
+        widgetPane.getRowConstraints().clear();
+        for (int i = 0; i < NUM_ROWS; i++) {
+            RowConstraints rowConst = new RowConstraints();
+            rowConst.setPercentHeight(100.0 / NUM_ROWS);
+            widgetPane.getRowConstraints().add(rowConst);
+        }
+    }
+
+
     private void buildDashboard() {
+        widgetPane.getChildren().clear();
         List<String> activeWidgets = dataManager.getSettings().activeWidgets;
-        
+
         if (activeWidgets == null || activeWidgets.isEmpty()) {
             welcomePane.setVisible(true);
             welcomePane.setManaged(true);
-            smallAddButton.setVisible(false);
-            smallAddButton.setManaged(false);
+            smallAddButton.setVisible(true);
+            modifyLayoutButton.setVisible(false);
         } else {
             welcomePane.setVisible(false);
             welcomePane.setManaged(false);
             smallAddButton.setVisible(true);
-            smallAddButton.setManaged(true);
-            
-            for (String widgetName : activeWidgets) {
-                VBox widget = createWidget(widgetName);
-                if (widget != null) {
-                    widgetPane.getChildren().add(widget);
+            modifyLayoutButton.setVisible(true);
+
+            // Parse layout strings and place widgets
+            for (String layoutInfo : activeWidgets) {
+                String[] parts = layoutInfo.split(";");
+                if (parts.length == 3) {
+                    String widgetName = parts[0];
+                    int col = Integer.parseInt(parts[1]);
+                    int row = Integer.parseInt(parts[2]);
+                    VBox widget = createWidget(widgetName);
+                    if (widget != null) {
+                        widget.setUserData(widgetName);
+                        widgetPane.add(widget, col, row);
+                    }
                 }
             }
         }
+    }
+
+    @FXML
+    private void handleModifyLayout() {
+        isModifyMode = !isModifyMode;
+
+        if (isModifyMode) {
+            modifyLayoutButton.setText("Save Layout");
+            smallAddButton.setDisable(true);
+            populatePlaceholders();
+            widgetPane.getChildren().stream()
+                .filter(node -> node.getUserData() != null)
+                .forEach(this::enableDragAndDrop);
+        } else {
+            // Save the new order
+            List<String> newWidgetLayout = new ArrayList<>();
+            for (Node node : widgetPane.getChildren()) {
+                if (node.getUserData() != null) { // Only save actual widgets
+                    String widgetName = (String) node.getUserData();
+                    Integer col = GridPane.getColumnIndex(node);
+                    Integer row = GridPane.getRowIndex(node);
+                    newWidgetLayout.add(String.format("%s;%d;%d", widgetName, col, row));
+                }
+            }
+            dataManager.getSettings().activeWidgets = newWidgetLayout;
+            dataManager.saveSettings(dataManager.getSettings());
+            
+            // Revert UI and redraw
+            modifyLayoutButton.setText("Modify Layout");
+            smallAddButton.setDisable(false);
+            buildDashboard(); // Rebuilds the dashboard in its new, final state
+        }
+    }
+
+    private void populatePlaceholders() {
+        Set<String> occupiedCells = new HashSet<>();
+        for (Node node : widgetPane.getChildren()) {
+            if (node.getUserData() != null) {
+                occupiedCells.add(GridPane.getColumnIndex(node) + ":" + GridPane.getRowIndex(node));
+            }
+        }
+
+        for (int row = 0; row < NUM_ROWS; row++) {
+            for (int col = 0; col < NUM_COLUMNS; col++) {
+                if (!occupiedCells.contains(col + ":" + row)) {
+                    Pane placeholder = new Pane();
+                    placeholder.getStyleClass().add("drop-target-pane");
+                    widgetPane.add(placeholder, col, row);
+                    enableDropTarget(placeholder);
+                }
+            }
+        }
+    }
+    
+    private void enableDragAndDrop(Node widget) {
+        widget.getStyleClass().add("draggable-widget");
+        widget.setOnDragDetected(event -> {
+            Dragboard db = widget.startDragAndDrop(TransferMode.MOVE);
+            ClipboardContent content = new ClipboardContent();
+            content.putString("dragging"); // Content is trivial
+            db.setContent(content);
+            draggedWidget = (VBox) widget;
+            event.consume();
+        });
+        widget.setOnDragDone(event -> {
+            // Clean up styles on all placeholders after drag is done
+            widgetPane.getChildren().forEach(node -> node.getStyleClass().remove("drag-over-widget"));
+            draggedWidget = null;
+        });
+    }
+
+    private void enableDropTarget(Node target) {
+        target.setOnDragOver(event -> {
+            if (event.getGestureSource() != target && event.getDragboard().hasString()) {
+                event.acceptTransferModes(TransferMode.MOVE);
+            }
+            event.consume();
+        });
+
+        target.setOnDragEntered(event -> target.getStyleClass().add("drag-over-widget"));
+        target.setOnDragExited(event -> target.getStyleClass().remove("drag-over-widget"));
+
+        target.setOnDragDropped(event -> {
+            if (draggedWidget != null) {
+                int newCol = GridPane.getColumnIndex(target);
+                int newRow = GridPane.getRowIndex(target);
+                
+                // Move widget to the new cell
+                GridPane.setColumnIndex(draggedWidget, newCol);
+                GridPane.setRowIndex(draggedWidget, newRow);
+                
+                event.setDropCompleted(true);
+            }
+            event.consume();
+        });
     }
     
     private VBox createWidget(String widgetName) {
@@ -70,8 +216,151 @@ public class DashboardController implements Controller {
             case "Previous Day PNL" -> createPrevDayPnlWidget();
             case "Current Month Calendar" -> createCurrentMonthWidget();
             case "Monthly Undiscipline Counter" -> createUdCounterWidget();
+            case "Weekly/Monthly PNL Tracker" -> createWeeklyMonthlyPnlWidget();
+            case "PNL Streak Counter" -> createPnlStreakWidget();
+            case "Best/Worst Day (Monthly)" -> createBestWorstDayWidget();
+            case "Rule of the Day" -> createRuleOfTheDayWidget();
             default -> null;
         };
+    }
+
+    private VBox createWeeklyMonthlyPnlWidget() {
+        VBox box = createWidgetContainer("PNL Tracker");
+        LocalDate today = LocalDate.now();
+        YearMonth currentMonth = YearMonth.from(today);
+        WeekFields weekFields = WeekFields.of(Locale.getDefault());
+        int currentWeek = today.get(weekFields.weekOfWeekBasedYear());
+
+        double weeklyPnl = 0;
+        double monthlyPnl = 0;
+
+        Map<LocalDate, Double> weekData = new TreeMap<>();
+        for (int i = 6; i >= 0; i--) {
+            weekData.put(today.minusDays(i), 0.0);
+        }
+
+        for (Map.Entry<String, PnlEntry> entry : dataManager.getPnlData().entrySet()) {
+            LocalDate date = LocalDate.parse(entry.getKey());
+            if (YearMonth.from(date).equals(currentMonth)) {
+                monthlyPnl += entry.getValue().pnl;
+                if (date.get(weekFields.weekOfWeekBasedYear()) == currentWeek && date.getYear() == today.getYear()) {
+                    weeklyPnl += entry.getValue().pnl;
+                }
+            }
+            if (weekData.containsKey(date)) {
+                weekData.put(date, entry.getValue().pnl);
+            }
+        }
+        
+        Pane sparkline = createSparkline(new ArrayList<>(weekData.values()));
+
+        Label weeklyLabel = new Label(String.format("This Week: $%.2f", weeklyPnl));
+        weeklyLabel.getStyleClass().add(weeklyPnl >= 0 ? "positive-text" : "negative-text");
+
+        Label monthlyLabel = new Label(String.format("This Month: $%.2f", monthlyPnl));
+        monthlyLabel.getStyleClass().add(monthlyPnl >= 0 ? "positive-text" : "negative-text");
+
+        box.getChildren().addAll(weeklyLabel, monthlyLabel, sparkline);
+        return box;
+    }
+
+    private Pane createSparkline(List<Double> data) {
+        Pane sparklinePane = new Pane();
+        sparklinePane.setPrefSize(240, 50);
+        sparklinePane.setMinHeight(50);
+
+        if (data.size() < 2) return sparklinePane;
+
+        double max = data.stream().max(Double::compare).orElse(0.0);
+        double min = data.stream().min(Double::compare).orElse(0.0);
+        double range = max - min;
+        if (range == 0) range = 1;
+
+        Path path = new Path();
+        path.getStyleClass().add("sparkline-path");
+
+        double x = 0;
+        double y = 50 - ((data.get(0) - min) / range * 45 + 2.5);
+        path.getElements().add(new MoveTo(x, y));
+
+        for (int i = 1; i < data.size(); i++) {
+            x = (double) i * (240.0 / (data.size() - 1));
+            y = 50 - ((data.get(i) - min) / range * 45 + 2.5);
+            path.getElements().add(new LineTo(x, y));
+        }
+
+        sparklinePane.getChildren().add(path);
+        return sparklinePane;
+    }
+
+    private VBox createPnlStreakWidget() {
+        VBox box = createWidgetContainer("PNL Streak");
+        int streak = 0;
+        LocalDate day = LocalDate.now().minusDays(1);
+        Map<String, PnlEntry> pnlData = dataManager.getPnlData();
+
+        while (true) {
+            PnlEntry entry = pnlData.get(day.toString());
+            if (entry != null && entry.pnl >= 0) {
+                streak++;
+                day = day.minusDays(1);
+            } else {
+                break;
+            }
+        }
+
+        Label streakLabel = new Label(String.valueOf(streak));
+        streakLabel.setStyle("-fx-font-size: 24px;");
+        if (streak > 0) streakLabel.getStyleClass().add("positive-text");
+
+        Label descriptionLabel = new Label("Consecutive Green Days");
+        box.getChildren().addAll(streakLabel, descriptionLabel);
+        return box;
+    }
+
+    private VBox createBestWorstDayWidget() {
+        VBox box = createWidgetContainer("Best/Worst Day (Month)");
+        YearMonth currentMonth = YearMonth.now();
+        double bestPnl = Double.NEGATIVE_INFINITY;
+        double worstPnl = Double.POSITIVE_INFINITY;
+
+        for (Map.Entry<String, PnlEntry> entry : dataManager.getPnlData().entrySet()) {
+            LocalDate date = LocalDate.parse(entry.getKey());
+            if (YearMonth.from(date).equals(currentMonth)) {
+                double pnl = entry.getValue().pnl;
+                if (pnl > bestPnl) bestPnl = pnl;
+                if (pnl < worstPnl) worstPnl = pnl;
+            }
+        }
+
+        if (bestPnl == Double.NEGATIVE_INFINITY) {
+            box.getChildren().add(new Label("No PNL data for this month."));
+        } else {
+            Label bestLabel = new Label(String.format("Best: $%.2f", bestPnl));
+            bestLabel.getStyleClass().add("positive-text");
+            Label worstLabel = new Label(String.format("Worst: $%.2f", worstPnl));
+            worstLabel.getStyleClass().add("negative-text");
+            box.getChildren().addAll(bestLabel, worstLabel);
+        }
+        return box;
+    }
+
+    private VBox createRuleOfTheDayWidget() {
+        VBox box = createWidgetContainer("Rule of the Day");
+        List<String> rules = dataManager.getSettings().rules;
+
+        if (rules == null || rules.isEmpty() || rules.stream().allMatch(String::isBlank)) {
+            box.getChildren().add(new Label("No trading rules found in settings."));
+        } else {
+            List<String> nonEmptyRules = rules.stream().filter(r -> !r.isBlank()).toList();
+            int dayOfYear = LocalDate.now().getDayOfYear();
+            int ruleIndex = (dayOfYear - 1) % nonEmptyRules.size();
+            Label ruleLabel = new Label('"' + nonEmptyRules.get(ruleIndex) + '"');
+            ruleLabel.setWrapText(true);
+            ruleLabel.setStyle("-fx-font-style: italic;");
+            box.getChildren().add(ruleLabel);
+        }
+        return box;
     }
 
     private VBox createLatestNoteWidget() {
@@ -127,7 +416,6 @@ public class DashboardController implements Controller {
         int firstDayOfWeek = firstDayOfMonth.getDayOfWeek().getValue();
         
         double monthTotalPnl = 0;
-
         for (int day = 1; day <= currentMonth.lengthOfMonth(); day++) {
             LocalDate date = currentMonth.atDay(day);
             int row = (day + firstDayOfWeek - 2) / 7 + 1;
@@ -135,7 +423,6 @@ public class DashboardController implements Controller {
             
             Circle dayCircle = new Circle(8);
             PnlEntry entry = dataManager.getPnlData().get(date.toString());
-            
             if (entry != null) {
                 monthTotalPnl += entry.pnl;
                 dayCircle.getStyleClass().add(entry.pnl >= 0 ? "positive-day-circle" : "negative-day-circle");
@@ -166,19 +453,17 @@ public class DashboardController implements Controller {
         }
         
         Label countLabel = new Label(String.valueOf(totalUndisciplined));
-        // --- THIS IS THE FIX ---
-        countLabel.getStyleClass().add("negative-text"); // Apply the red color style
-        countLabel.setStyle("-fx-font-size: 24px;"); // Keep bold style implicitly from class
+        countLabel.getStyleClass().add("negative-text");
+        countLabel.setStyle("-fx-font-size: 24px;");
         
         Label descriptionLabel = new Label("Undisciplined actions this month");
-        
         box.getChildren().addAll(countLabel, descriptionLabel);
         return box;
     }
 
     private VBox createWidgetContainer(String title) {
         VBox box = new VBox(10);
-        box.getStyleClass().add("note-box");
+        box.getStyleClass().add("glass-widget"); // Using the new glassmorphism style
         box.setPrefWidth(280);
         box.setAlignment(Pos.CENTER);
         if (!title.isEmpty()) {

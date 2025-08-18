@@ -7,21 +7,24 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.layout.VBox?>
 
 <StackPane fx:id="rootStackPane" styleClass="main-view" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.tdf.controllers.ExamplesViewController">
    <children>
       <BorderPane>
          <top>
-            <VBox alignment="CENTER" spacing="10.0" BorderPane.alignment="CENTER">
+            <StackPane BorderPane.alignment="CENTER">
                <children>
-                  <Label fx:id="titleLabel" styleClass="h1" text="Setup Examples" />
-                  <Button onAction="#handleBack" styleClass="standard-button" text="&lt; Back to Setup Details" />
+                  <Label fx:id="titleLabel" styleClass="h1" text="Setup Examples" StackPane.alignment="CENTER" />
+                  <Button onAction="#handleBack" styleClass="back-button" text="&lt; Back" StackPane.alignment="CENTER_LEFT">
+                     <StackPane.margin>
+                        <Insets left="20.0" />
+                     </StackPane.margin>
+                  </Button>
                </children>
                <padding>
                   <Insets top="20.0" />
                </padding>
-            </VBox>
+            </StackPane>
          </top>
          <center>
             <ScrollPane fitToWidth="true" styleClass="scroll-pane">

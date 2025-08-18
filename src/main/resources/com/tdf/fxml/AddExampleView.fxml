@@ -7,19 +7,24 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
 <BorderPane styleClass="main-view" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.tdf.controllers.AddExampleController">
    <top>
-      <VBox alignment="CENTER" spacing="10.0" BorderPane.alignment="CENTER">
+      <StackPane>
          <children>
-            <Label fx:id="titleLabel" styleClass="h1" text="Add New Example" />
-            <Button onAction="#handleBack" styleClass="standard-button" text="&lt; Back to Examples" />
+            <Label fx:id="titleLabel" styleClass="h1" text="Add New Example" StackPane.alignment="CENTER" />
+            <Button onAction="#handleBack" styleClass="back-button" text="&lt; Back">
+               <StackPane.margin>
+                  <Insets left="20.0" />
+               </StackPane.margin>
+            </Button>
          </children>
          <padding>
             <Insets top="20.0" />
          </padding>
-      </VBox>
+      </StackPane>
    </top>
    <center>
       <VBox alignment="TOP_CENTER" spacing="15.0" BorderPane.alignment="CENTER">

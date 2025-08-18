@@ -1,25 +1,27 @@
 package com.tdf.data;
 
-import java.util.List;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class Settings {
     public double maxLoss;
     public int ruleIntervalSeconds;
-    public int rulesScreenSeconds; // NEW FIELD
+    public int rulesScreenSeconds;
+    public boolean showWinRate;
+    public boolean animatedBackground;
     public List<String> rules;
     public List<String> tasks;
     public List<String> setups;
     public List<String> activeWidgets;
-    public boolean showWinRate; 
 
     public static Settings createDefault() {
         Settings settings = new Settings();
         settings.maxLoss = 100.00;
         settings.ruleIntervalSeconds = 10;
-        settings.rulesScreenSeconds = 30; // Default to 30 seconds
+        settings.rulesScreenSeconds = 30;
         settings.showWinRate = false;
+        settings.animatedBackground = false;
         settings.rules = new ArrayList<>(Arrays.asList(
             "Hyperscalp ONLY the dip after a strong push.",
             "Do not ignore your SPECIFIC ENTRY POINTS."

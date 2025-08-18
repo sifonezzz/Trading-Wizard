@@ -1,54 +1,90 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <BorderPane styleClass="main-view" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.tdf.controllers.SetupDetailController">
    <top>
-      <VBox alignment="CENTER" spacing="10.0" BorderPane.alignment="CENTER">
+      <StackPane>
          <children>
-            <Label fx:id="setupNameLabel" styleClass="h1" text="Setup Name" />
-            <Button onAction="#handleBack" styleClass="standard-button" text="&lt; Back to Setups List" />
+            <Label fx:id="setupNameLabel" styleClass="h1" text="Setup Name" StackPane.alignment="CENTER" />
+            <Button onAction="#handleBack" styleClass="back-button" text="&lt; Back" StackPane.alignment="CENTER_LEFT">
+               <StackPane.margin>
+                  <Insets left="20.0" />
+               </StackPane.margin>
+            </Button>
          </children>
          <padding>
             <Insets top="20.0" />
          </padding>
-      </VBox>
+      </StackPane>
    </top>
    <center>
-      <VBox alignment="TOP_CENTER" spacing="15.0" BorderPane.alignment="CENTER">
+      <GridPane hgap="30.0" styleClass="content-pane">
+         <columnConstraints>
+            <ColumnConstraints hgrow="ALWAYS" percentWidth="60.0" />
+            <ColumnConstraints hgrow="SOMETIMES" percentWidth="40.0" />
+         </columnConstraints>
+         <rowConstraints>
+            <RowConstraints vgrow="ALWAYS" />
+         </rowConstraints>
          <children>
-            <Label text="Description:" styleClass="h3" />
-            
-            <!-- Modified description container -->
-            <VBox fx:id="descriptionContainer" spacing="5.0">
-               <TextArea fx:id="descriptionArea" prefHeight="150.0" wrapText="true" maxWidth="Infinity" />
-               <HBox alignment="BOTTOM_RIGHT" maxWidth="Infinity">
-                  <Pane HBox.hgrow="ALWAYS" />
-                  <Button fx:id="editDescriptionButton" onAction="#handleEditDescription" styleClass="icon-button" text="Edit" />
-                  <Button fx:id="saveDescriptionButton" onAction="#handleSaveDescription" styleClass="standard-button" text="Save" />
-               </HBox>
-            </VBox>
-            
-            <HBox alignment="CENTER" spacing="50.0">
+            <VBox spacing="10.0">
                <children>
-                  <Button onAction="#showLostSetups" styleClass="exit-button" text="Lost Setups" />
-                  <Button onAction="#showWonSetups" styleClass="standard-button" text="Won Setups" />
+                  <Label text="Description &amp; Rules" styleClass="h3" />
+                  <VBox fx:id="descriptionContainer" VBox.vgrow="ALWAYS">
+                     <children>
+                        <TextArea fx:id="descriptionArea" prefHeight="400.0" wrapText="true" VBox.vgrow="ALWAYS">
+                           <styleClass>
+                              <String fx:value="description-area" />
+                           </styleClass>
+                        </TextArea>
+                        <HBox alignment="BOTTOM_RIGHT" maxWidth="Infinity">
+                           <children>
+                              <Pane HBox.hgrow="ALWAYS" />
+                              <Button fx:id="editDescriptionButton" onAction="#handleEditDescription" styleClass="icon-button" text="Edit" />
+                              <Button fx:id="saveDescriptionButton" onAction="#handleSaveDescription" styleClass="standard-button" text="Save" />
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
                </children>
-               <VBox.margin>
-                  <Insets top="30.0" />
-               </VBox.margin>
-            </HBox>
+            </VBox>
+            <VBox spacing="20.0" GridPane.columnIndex="1">
+               <children>
+                  <Label text="Example Sets" styleClass="h3" />
+                  <VBox fx:id="wonExamplesBox" alignment="CENTER" onMouseClicked="#showWonSetups" spacing="10.0" styleClass="example-card">
+                     <children>
+                        <FontIcon iconLiteral="fas-check-circle" styleClass="won-icon" />
+                        <Label styleClass="h3" text="Won Examples" />
+                        <Label fx:id="wonCountLabel" text="0 Examples" />
+                        </children>
+                  </VBox>
+                  <VBox fx:id="lostExamplesBox" alignment="CENTER" onMouseClicked="#showLostSetups" spacing="10.0" styleClass="example-card">
+                     <children>
+                        <FontIcon iconLiteral="fas-times-circle" styleClass="lost-icon" />
+                        <Label styleClass="h3" text="Lost Examples" />
+                        <Label fx:id="lostCountLabel" text="0 Examples" />
+                        </children>
+                  </VBox>
+               </children>
+            </VBox>
          </children>
          <padding>
-            <Insets bottom="20.0" left="50.0" right="50.0" top="20.0" />
+            <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
          </padding>
-      </VBox>
+      </GridPane>
    </center>
 </BorderPane>

@@ -166,4 +166,11 @@ public class MainApp extends Application {
             e.printStackTrace();
         }
     }
+     public void applyThemeSettings() {
+        if (mainViewController != null) {
+            mainViewController.applyThemeSettings();
+        }
+    }
+    
 }
+

@@ -50,17 +50,14 @@ public class PnlCalendarController implements Controller {
 
     private void drawCalendar() {
         monthLabel.setText(currentMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH)));
-        
         calendarGrid.getChildren().removeIf(node -> GridPane.getRowIndex(node) != null && GridPane.getRowIndex(node) > 0);
 
         LocalDate firstDayOfMonth = currentMonth.atDay(1);
         int firstDayOfWeek = firstDayOfMonth.getDayOfWeek().getValue();
-
         int daysInMonth = currentMonth.lengthOfMonth();
         int day = 1;
         
         double[] weeklyPnls = new double[6];
-
         for (int row = 1; row <= 6; row++) {
             for (int col = 0; col < 7; col++) {
                 VBox dayCell = new VBox(2);
@@ -74,14 +71,12 @@ public class PnlCalendarController implements Controller {
                     
                     String dateStr = currentMonth.atDay(day).toString();
                     PnlEntry pnlEntry = dataManager.getPnlData().get(dateStr);
-
                     if (pnlEntry != null) {
                         double pnl = pnlEntry.pnl;
                         weeklyPnls[row-1] += pnl;
                         
                         Label pnlLabel = new Label(String.format("$%.2f", pnl));
                         dayCell.getChildren().add(pnlLabel);
-
                         if (pnlEntry.undisciplineCount > 0) {
                             Label udLabel = new Label("UD: " + pnlEntry.undisciplineCount);
                             dayCell.getChildren().add(udLabel);
@@ -90,6 +85,8 @@ public class PnlCalendarController implements Controller {
                         if (pnlEntry.exceededMaxLoss) {
                             Label maxLossLabel = new Label("PAST MAX LOSS");
                             maxLossLabel.getStyleClass().add("max-loss-label");
+                            // FIX: Add a 3px bottom margin to the label
+                            VBox.setMargin(maxLossLabel, new javafx.geometry.Insets(0, 0, 3, 0));
                             dayCell.getChildren().add(maxLossLabel);
                         }
 
@@ -104,7 +101,7 @@ public class PnlCalendarController implements Controller {
                         }
                     }
                     day++;
-                } // --- THIS WAS THE MISSING BRACE ---
+                }
                 
                 calendarGrid.add(dayCell, col, row);
             }

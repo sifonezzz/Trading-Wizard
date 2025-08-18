@@ -8,10 +8,8 @@
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
 
-<!-- FIX: Changed root element to BorderPane to allow for better alignment -->
 <BorderPane styleClass="main-view" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.tdf.controllers.SetupsViewController">
    <top>
-      <!-- FIX: Title is now centered -->
       <Label styleClass="h1" text="Setups Samples" BorderPane.alignment="CENTER">
          <padding>
             <Insets top="20.0" />

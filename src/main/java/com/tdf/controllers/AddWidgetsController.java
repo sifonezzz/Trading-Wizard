@@ -15,10 +15,15 @@ import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class AddWidgetsController implements Controller {
+
+    // Internal record to replace java.awt.Point, resolving compile errors
+    private record Cell(int x, int y) {}
 
     @FXML private FlowPane widgetSelectionPane;
     private MainApp mainApp;
@@ -27,7 +32,11 @@ public class AddWidgetsController implements Controller {
         "Latest Journal Note",
         "Previous Day PNL",
         "Current Month Calendar",
-        "Monthly Undiscipline Counter"
+        "Monthly Undiscipline Counter",
+        "Weekly/Monthly PNL Tracker",
+        "PNL Streak Counter",
+        "Best/Worst Day (Monthly)",
+        "Rule of the Day"
     };
 
     @Override
@@ -39,6 +48,12 @@ public class AddWidgetsController implements Controller {
     private void populateWidgetSelection() {
         Settings settings = MainApp.getDataManager().getSettings();
         List<String> activeWidgets = settings.activeWidgets != null ? settings.activeWidgets : new ArrayList<>();
+        
+        // Determine which widgets are already active by name
+        Set<String> activeWidgetNames = new HashSet<>();
+        for (String layoutInfo : activeWidgets) {
+            activeWidgetNames.add(layoutInfo.split(";")[0]);
+        }
 
         for (String widgetName : AVAILABLE_WIDGETS) {
             VBox previewBox = new VBox(10);
@@ -51,23 +66,16 @@ public class AddWidgetsController implements Controller {
             previewLabel.setWrapText(true);
             
             CheckBox checkBox = new CheckBox("Add to Dashboard");
-            checkBox.setSelected(activeWidgets.contains(widgetName));
+            checkBox.setSelected(activeWidgetNames.contains(widgetName));
             checkBox.setMaxWidth(Double.MAX_VALUE);
-            // --- THIS IS THE FIX ---
-            // 1. Apply a new, smaller style class
             checkBox.getStyleClass().add("widget-checkbox");
             
-            // 2. Create a spacer pane that will grow and push the checkbox to the bottom
             Pane spacer = new Pane();
             VBox.setVgrow(spacer, Priority.ALWAYS);
             
-            // 3. Add a small margin to the bottom of the checkbox
             VBox.setMargin(checkBox, new Insets(0, 10, 10, 10));
-            // --------------------
             
             widgetCheckBoxes.put(widgetName, checkBox);
-            
-            // Add elements in the new order: title, spacer, checkbox
             previewBox.getChildren().addAll(previewLabel, spacer, checkBox);
             widgetSelectionPane.getChildren().add(previewBox);
         }
@@ -78,9 +86,32 @@ public class AddWidgetsController implements Controller {
         Settings settings = MainApp.getDataManager().getSettings();
         List<String> newActiveWidgets = new ArrayList<>();
         
+        Set<Cell> occupiedCells = new HashSet<>();
+        if (settings.activeWidgets != null) {
+            for (String layoutInfo : settings.activeWidgets) {
+                String[] parts = layoutInfo.split(";");
+                if (parts.length == 3) {
+                    occupiedCells.add(new Cell(Integer.parseInt(parts[1]), Integer.parseInt(parts[2])));
+                }
+            }
+        }
+
         for (Map.Entry<String, CheckBox> entry : widgetCheckBoxes.entrySet()) {
-            if (entry.getValue().isSelected()) {
-                newActiveWidgets.add(entry.getKey());
+            String widgetName = entry.getKey();
+            boolean isSelected = entry.getValue().isSelected();
+            String existingEntry = settings.activeWidgets.stream()
+                .filter(s -> s.startsWith(widgetName + ";"))
+                .findFirst().orElse(null);
+
+            if (isSelected) {
+                if (existingEntry != null) {
+                    newActiveWidgets.add(existingEntry); // Keep existing widget with its position
+                } else {
+                    // Find the first empty cell for the new widget
+                    Cell emptyCell = findFirstEmptyCell(occupiedCells);
+                    newActiveWidgets.add(String.format("%s;%d;%d", widgetName, emptyCell.x(), emptyCell.y()));
+                    occupiedCells.add(emptyCell); // Reserve this cell for the next new widget
+                }
             }
         }
         
@@ -88,5 +119,18 @@ public class AddWidgetsController implements Controller {
         MainApp.getDataManager().saveSettings(settings);
         
         mainApp.showDashboard();
+    }
+
+    private Cell findFirstEmptyCell(Set<Cell> occupiedCells) {
+        // Assuming a 3xN grid
+        for (int r = 0; r < 10; r++) { // Check up to 10 rows
+            for (int c = 0; c < 3; c++) {
+                Cell cell = new Cell(c, r);
+                if (!occupiedCells.contains(cell)) {
+                    return cell;
+                }
+            }
+        }
+        return new Cell(0, 0); // Fallback
     }
 }
