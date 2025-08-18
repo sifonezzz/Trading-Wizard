@@ -24,7 +24,7 @@ public class SetupsViewController implements Controller {
     @FXML private FlowPane setupsPane;
     private MainApp mainApp;
     private DataManager dataManager;
-    
+
     @Override
     public void setMainApp(MainApp mainApp) {
         this.mainApp = mainApp;
@@ -38,7 +38,7 @@ public class SetupsViewController implements Controller {
 
         for (SetupSample setup : dataManager.getSetupSamples()) {
             VBox setupBox = new VBox(10);
-            setupBox.getStyleClass().add("setup-box"); // Use new style class
+            setupBox.getStyleClass().add("setup-box"); // Use the styled box
             setupBox.setPrefWidth(280);
             setupBox.setAlignment(Pos.TOP_CENTER);
 
@@ -49,7 +49,7 @@ public class SetupsViewController implements Controller {
             if (showWinRate) {
                 nameText += String.format(" (%.1f%% WR)", setup.getWinRate());
             }
-            
+
             Label nameLabel = new Label(nameText);
             nameLabel.getStyleClass().add("h3");
 
@@ -62,8 +62,7 @@ public class SetupsViewController implements Controller {
             Label descriptionLabel = new Label(desc);
             descriptionLabel.getStyleClass().add("note-text");
             descriptionLabel.setWrapText(true);
-            
-            // Spacer to push button to the bottom
+
             Pane spacer = new Pane();
             VBox.setVgrow(spacer, Priority.ALWAYS);
 

@@ -97,7 +97,7 @@
                         <HBox alignment="CENTER_LEFT" spacing="10.0">
                            <children>
                               <Label text="Enable Animated Background:" />
-                              <ToggleButton fx:id="animatedBackgroundToggle" text="Off" />
+                              <ToggleButton fx:id="animatedBackgroundToggle" styleClass="settings-toggle-button" text="Off" />
                            </children>
                         </HBox>
                      </children>
@@ -122,4 +122,4 @@
          </padding>
       </HBox>
    </bottom>
-</BorderPane> ```
+</BorderPane>

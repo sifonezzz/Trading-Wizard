@@ -6,12 +6,15 @@ import com.tdf.data.DataManager;
 import com.tdf.data.Note;
 import com.tdf.data.PnlEntry;
 import javafx.animation.FadeTransition;
+import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
 import javafx.geometry.Pos;
+import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
@@ -25,8 +28,6 @@ import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
 import javafx.util.Duration;
-
-import java.awt.Point;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -45,14 +46,17 @@ public class DashboardController implements Controller {
     @FXML private GridPane widgetPane;
     @FXML private Button smallAddButton;
     @FXML private Button modifyLayoutButton;
+    @FXML private ScrollPane dashboardScrollPane;
 
     private MainApp mainApp;
     private DataManager dataManager;
     private boolean isModifyMode = false;
     private VBox draggedWidget = null;
+    private int sourceCol, sourceRow;
+    private boolean gridInitialized = false;
 
     private static final int NUM_COLUMNS = 3;
-    private static final int NUM_ROWS = 3; // Define a max grid size for placeholders
+    private static final int NUM_ROWS = 3;
 
     @Override
     public void setMainApp(MainApp mainApp) {
@@ -61,11 +65,18 @@ public class DashboardController implements Controller {
         buildDashboard();
     }
 
-     private void initializeGrid() {
-        // Bind the grid's height to the scroll pane's viewport height to make it fill the space
-        widgetPane.prefHeightProperty().bind(dashboardScrollPane.viewportBoundsProperty().map(Bounds::getHeight));
+    @FXML
+    public void initialize() {
+        ChangeListener<Bounds> sizeListener = (obs, oldVal, newVal) -> {
+            if (newVal.getWidth() > 0 && !gridInitialized) {
+                initializeGrid();
+                gridInitialized = true;
+            }
+        };
+        dashboardScrollPane.viewportBoundsProperty().addListener(sizeListener);
+    }
 
-        // Setup column constraints to be of equal width
+    private void initializeGrid() {
         widgetPane.getColumnConstraints().clear();
         for (int i = 0; i < NUM_COLUMNS; i++) {
             ColumnConstraints colConst = new ColumnConstraints();
@@ -73,7 +84,6 @@ public class DashboardController implements Controller {
             widgetPane.getColumnConstraints().add(colConst);
         }
 
-        // Setup row constraints to be of equal height
         widgetPane.getRowConstraints().clear();
         for (int i = 0; i < NUM_ROWS; i++) {
             RowConstraints rowConst = new RowConstraints();
@@ -81,7 +91,6 @@ public class DashboardController implements Controller {
             widgetPane.getRowConstraints().add(rowConst);
         }
     }
-
 
     private void buildDashboard() {
         widgetPane.getChildren().clear();
@@ -98,7 +107,6 @@ public class DashboardController implements Controller {
             smallAddButton.setVisible(true);
             modifyLayoutButton.setVisible(true);
 
-            // Parse layout strings and place widgets
             for (String layoutInfo : activeWidgets) {
                 String[] parts = layoutInfo.split(";");
                 if (parts.length == 3) {
@@ -108,6 +116,7 @@ public class DashboardController implements Controller {
                     VBox widget = createWidget(widgetName);
                     if (widget != null) {
                         widget.setUserData(widgetName);
+                        GridPane.setValignment(widget, VPos.TOP);
                         widgetPane.add(widget, col, row);
                     }
                 }
@@ -118,7 +127,6 @@ public class DashboardController implements Controller {
     @FXML
     private void handleModifyLayout() {
         isModifyMode = !isModifyMode;
-
         if (isModifyMode) {
             modifyLayoutButton.setText("Save Layout");
             smallAddButton.setDisable(true);
@@ -127,10 +135,9 @@ public class DashboardController implements Controller {
                 .filter(node -> node.getUserData() != null)
                 .forEach(this::enableDragAndDrop);
         } else {
-            // Save the new order
             List<String> newWidgetLayout = new ArrayList<>();
             for (Node node : widgetPane.getChildren()) {
-                if (node.getUserData() != null) { // Only save actual widgets
+                if (node.getUserData() != null) {
                     String widgetName = (String) node.getUserData();
                     Integer col = GridPane.getColumnIndex(node);
                     Integer row = GridPane.getRowIndex(node);
@@ -140,10 +147,9 @@ public class DashboardController implements Controller {
             dataManager.getSettings().activeWidgets = newWidgetLayout;
             dataManager.saveSettings(dataManager.getSettings());
             
-            // Revert UI and redraw
             modifyLayoutButton.setText("Modify Layout");
             smallAddButton.setDisable(false);
-            buildDashboard(); // Rebuilds the dashboard in its new, final state
+            buildDashboard();
         }
     }
 
@@ -154,7 +160,6 @@ public class DashboardController implements Controller {
                 occupiedCells.add(GridPane.getColumnIndex(node) + ":" + GridPane.getRowIndex(node));
             }
         }
-
         for (int row = 0; row < NUM_ROWS; row++) {
             for (int col = 0; col < NUM_COLUMNS; col++) {
                 if (!occupiedCells.contains(col + ":" + row)) {
@@ -172,13 +177,15 @@ public class DashboardController implements Controller {
         widget.setOnDragDetected(event -> {
             Dragboard db = widget.startDragAndDrop(TransferMode.MOVE);
             ClipboardContent content = new ClipboardContent();
-            content.putString("dragging"); // Content is trivial
+            content.putString("dragging");
             db.setContent(content);
             draggedWidget = (VBox) widget;
+            // Store original position
+            sourceCol = GridPane.getColumnIndex(draggedWidget);
+            sourceRow = GridPane.getRowIndex(draggedWidget);
             event.consume();
         });
         widget.setOnDragDone(event -> {
-            // Clean up styles on all placeholders after drag is done
             widgetPane.getChildren().forEach(node -> node.getStyleClass().remove("drag-over-widget"));
             draggedWidget = null;
         });
@@ -191,10 +198,8 @@ public class DashboardController implements Controller {
             }
             event.consume();
         });
-
         target.setOnDragEntered(event -> target.getStyleClass().add("drag-over-widget"));
         target.setOnDragExited(event -> target.getStyleClass().remove("drag-over-widget"));
-
         target.setOnDragDropped(event -> {
             if (draggedWidget != null) {
                 int newCol = GridPane.getColumnIndex(target);
@@ -203,6 +208,15 @@ public class DashboardController implements Controller {
                 // Move widget to the new cell
                 GridPane.setColumnIndex(draggedWidget, newCol);
                 GridPane.setRowIndex(draggedWidget, newRow);
+
+                // FIX: Add a new placeholder to the now-empty source cell
+                Pane newPlaceholder = new Pane();
+                newPlaceholder.getStyleClass().add("drop-target-pane");
+                widgetPane.add(newPlaceholder, sourceCol, sourceRow);
+                enableDropTarget(newPlaceholder);
+                
+                // Remove the old placeholder that was just filled
+                widgetPane.getChildren().remove(target);
                 
                 event.setDropCompleted(true);
             }
@@ -210,8 +224,10 @@ public class DashboardController implements Controller {
         });
     }
     
+    // (All other methods in this file are unchanged)
+
     private VBox createWidget(String widgetName) {
-        return switch (widgetName) {
+        VBox widget = switch (widgetName) {
             case "Latest Journal Note" -> createLatestNoteWidget();
             case "Previous Day PNL" -> createPrevDayPnlWidget();
             case "Current Month Calendar" -> createCurrentMonthWidget();
@@ -222,23 +238,24 @@ public class DashboardController implements Controller {
             case "Rule of the Day" -> createRuleOfTheDayWidget();
             default -> null;
         };
+        if (widget != null) {
+            GridPane.setValignment(widget, VPos.TOP);
+        }
+        return widget;
     }
-
+    
     private VBox createWeeklyMonthlyPnlWidget() {
         VBox box = createWidgetContainer("PNL Tracker");
         LocalDate today = LocalDate.now();
         YearMonth currentMonth = YearMonth.from(today);
         WeekFields weekFields = WeekFields.of(Locale.getDefault());
         int currentWeek = today.get(weekFields.weekOfWeekBasedYear());
-
         double weeklyPnl = 0;
         double monthlyPnl = 0;
-
         Map<LocalDate, Double> weekData = new TreeMap<>();
         for (int i = 6; i >= 0; i--) {
             weekData.put(today.minusDays(i), 0.0);
         }
-
         for (Map.Entry<String, PnlEntry> entry : dataManager.getPnlData().entrySet()) {
             LocalDate date = LocalDate.parse(entry.getKey());
             if (YearMonth.from(date).equals(currentMonth)) {
@@ -251,15 +268,11 @@ public class DashboardController implements Controller {
                 weekData.put(date, entry.getValue().pnl);
             }
         }
-        
         Pane sparkline = createSparkline(new ArrayList<>(weekData.values()));
-
         Label weeklyLabel = new Label(String.format("This Week: $%.2f", weeklyPnl));
         weeklyLabel.getStyleClass().add(weeklyPnl >= 0 ? "positive-text" : "negative-text");
-
         Label monthlyLabel = new Label(String.format("This Month: $%.2f", monthlyPnl));
         monthlyLabel.getStyleClass().add(monthlyPnl >= 0 ? "positive-text" : "negative-text");
-
         box.getChildren().addAll(weeklyLabel, monthlyLabel, sparkline);
         return box;
     }
@@ -268,27 +281,21 @@ public class DashboardController implements Controller {
         Pane sparklinePane = new Pane();
         sparklinePane.setPrefSize(240, 50);
         sparklinePane.setMinHeight(50);
-
         if (data.size() < 2) return sparklinePane;
-
         double max = data.stream().max(Double::compare).orElse(0.0);
         double min = data.stream().min(Double::compare).orElse(0.0);
         double range = max - min;
         if (range == 0) range = 1;
-
         Path path = new Path();
         path.getStyleClass().add("sparkline-path");
-
         double x = 0;
         double y = 50 - ((data.get(0) - min) / range * 45 + 2.5);
         path.getElements().add(new MoveTo(x, y));
-
         for (int i = 1; i < data.size(); i++) {
             x = (double) i * (240.0 / (data.size() - 1));
             y = 50 - ((data.get(i) - min) / range * 45 + 2.5);
             path.getElements().add(new LineTo(x, y));
         }
-
         sparklinePane.getChildren().add(path);
         return sparklinePane;
     }
@@ -298,7 +305,6 @@ public class DashboardController implements Controller {
         int streak = 0;
         LocalDate day = LocalDate.now().minusDays(1);
         Map<String, PnlEntry> pnlData = dataManager.getPnlData();
-
         while (true) {
             PnlEntry entry = pnlData.get(day.toString());
             if (entry != null && entry.pnl >= 0) {
@@ -308,11 +314,9 @@ public class DashboardController implements Controller {
                 break;
             }
         }
-
         Label streakLabel = new Label(String.valueOf(streak));
         streakLabel.setStyle("-fx-font-size: 24px;");
         if (streak > 0) streakLabel.getStyleClass().add("positive-text");
-
         Label descriptionLabel = new Label("Consecutive Green Days");
         box.getChildren().addAll(streakLabel, descriptionLabel);
         return box;
@@ -323,7 +327,6 @@ public class DashboardController implements Controller {
         YearMonth currentMonth = YearMonth.now();
         double bestPnl = Double.NEGATIVE_INFINITY;
         double worstPnl = Double.POSITIVE_INFINITY;
-
         for (Map.Entry<String, PnlEntry> entry : dataManager.getPnlData().entrySet()) {
             LocalDate date = LocalDate.parse(entry.getKey());
             if (YearMonth.from(date).equals(currentMonth)) {
@@ -332,7 +335,6 @@ public class DashboardController implements Controller {
                 if (pnl < worstPnl) worstPnl = pnl;
             }
         }
-
         if (bestPnl == Double.NEGATIVE_INFINITY) {
             box.getChildren().add(new Label("No PNL data for this month."));
         } else {
@@ -348,7 +350,6 @@ public class DashboardController implements Controller {
     private VBox createRuleOfTheDayWidget() {
         VBox box = createWidgetContainer("Rule of the Day");
         List<String> rules = dataManager.getSettings().rules;
-
         if (rules == null || rules.isEmpty() || rules.stream().allMatch(String::isBlank)) {
             box.getChildren().add(new Label("No trading rules found in settings."));
         } else {
@@ -381,7 +382,6 @@ public class DashboardController implements Controller {
         VBox box = createWidgetContainer("Previous Day PNL");
         LocalDate yesterday = LocalDate.now().minusDays(1);
         PnlEntry entry = dataManager.getPnlData().get(yesterday.toString());
-
         if (entry == null) {
             box.getChildren().add(new Label("No PNL data for yesterday."));
         } else {
@@ -397,30 +397,24 @@ public class DashboardController implements Controller {
         VBox box = createWidgetContainer("");
         LocalDate today = LocalDate.now();
         YearMonth currentMonth = YearMonth.from(today);
-        
         Label monthNameLabel = new Label(currentMonth.format(DateTimeFormatter.ofPattern("MMMM", Locale.ENGLISH)));
         monthNameLabel.getStyleClass().add("h3");
         box.getChildren().add(0, monthNameLabel);
-
         GridPane miniCalendar = new GridPane();
         miniCalendar.setAlignment(Pos.CENTER);
         miniCalendar.setHgap(4);
         miniCalendar.setVgap(4);
-
         String[] days = {"M", "T", "W", "T", "F", "S", "S"};
         for (int i = 0; i < days.length; i++) {
             miniCalendar.add(new Label(days[i]), i, 0);
         }
-
         LocalDate firstDayOfMonth = currentMonth.atDay(1);
         int firstDayOfWeek = firstDayOfMonth.getDayOfWeek().getValue();
-        
         double monthTotalPnl = 0;
         for (int day = 1; day <= currentMonth.lengthOfMonth(); day++) {
             LocalDate date = currentMonth.atDay(day);
             int row = (day + firstDayOfWeek - 2) / 7 + 1;
             int col = (day + firstDayOfWeek - 2) % 7;
-            
             Circle dayCircle = new Circle(8);
             PnlEntry entry = dataManager.getPnlData().get(date.toString());
             if (entry != null) {
@@ -431,11 +425,9 @@ public class DashboardController implements Controller {
             }
             miniCalendar.add(dayCircle, col, row);
         }
-        
         Label monthTotalLabel = new Label(String.format("$%.2f", monthTotalPnl));
         if (monthTotalPnl >= 0) monthTotalLabel.getStyleClass().add("positive-text");
         else monthTotalLabel.getStyleClass().add("negative-text");
-
         box.getChildren().addAll(miniCalendar, monthTotalLabel);
         return box;
     }
@@ -444,18 +436,15 @@ public class DashboardController implements Controller {
         VBox box = createWidgetContainer("Monthly Undiscipline");
         YearMonth currentMonth = YearMonth.now();
         int totalUndisciplined = 0;
-        
         for (Map.Entry<String, PnlEntry> entry : dataManager.getPnlData().entrySet()) {
             LocalDate date = LocalDate.parse(entry.getKey());
             if (YearMonth.from(date).equals(currentMonth)) {
                 totalUndisciplined += entry.getValue().undisciplineCount;
             }
         }
-        
         Label countLabel = new Label(String.valueOf(totalUndisciplined));
         countLabel.getStyleClass().add("negative-text");
         countLabel.setStyle("-fx-font-size: 24px;");
-        
         Label descriptionLabel = new Label("Undisciplined actions this month");
         box.getChildren().addAll(countLabel, descriptionLabel);
         return box;
@@ -463,7 +452,7 @@ public class DashboardController implements Controller {
 
     private VBox createWidgetContainer(String title) {
         VBox box = new VBox(10);
-        box.getStyleClass().add("glass-widget"); // Using the new glassmorphism style
+        box.getStyleClass().add("glass-widget");
         box.setPrefWidth(280);
         box.setAlignment(Pos.CENTER);
         if (!title.isEmpty()) {

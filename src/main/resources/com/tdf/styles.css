@@ -5,7 +5,7 @@
     -frame-bg-color: #101010;
     -sidebar-color: #181818;
     -sidebar-button-hover: #2a2a2a;
-    -sidebar-button-selected: #224a6e; /* Softer blue color */
+    -sidebar-button-selected: #224a6e;
     -button-color: #1F6AA5;
     -button-hover-color: #2988d2;
     -positive-color: #26A69A;
@@ -24,220 +24,47 @@
 .scroll-bar:horizontal, .scroll-bar:vertical { -fx-background-color: -frame-bg-color; }
 .scroll-bar .thumb { -fx-background-color: -button-color; -fx-background-radius: 5; }
 
-/* --- Custom Title Bar --- */
-.title-bar { -fx-background-color: -sidebar-color; -fx-padding: 5 5 5 15; }
-.window-title { -fx-font-family: "Fira Code Bold"; -fx-font-size: 14px; -fx-text-fill: -soft-white-text; }
-.window-button, .window-button-close { -fx-background-color: transparent; -fx-text-fill: -soft-white-text; -fx-font-family: "Fira Code Bold"; -fx-font-size: 14px; -fx-padding: 2px 12px 2px 12px; }
-.window-button:hover { -fx-background-color: -sidebar-button-hover; }
-.window-button-close:hover { -fx-background-color: -negative-color; }
-
-/* --- Sidebar --- */
+/* --- Sidebar (Squared Corners) --- */
 .sidebar { -fx-background-color: -sidebar-color; -fx-pref-width: 220px; }
 .sidebar-title { -fx-font-family: "Fira Code Bold"; -fx-font-size: 20px; -fx-text-fill: white; }
-/* FIX: Reverted sidebar button style to the original vertical list look */
-.sidebar-button {
-    -fx-background-color: transparent;
-    -fx-text-fill: #A9B7D1;
-    -fx-font-size: 14px;
-    -fx-alignment: CENTER_LEFT;
-    -fx-padding: 10 10 10 20;
-    -fx-background-radius: 0;
-}r-button:hover { -fx-background-color: -sidebar-button-hover; -fx-text-fill: white; }
+.sidebar-button { -fx-background-color: transparent; -fx-text-fill: #A9B7D1; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 10 10 10 20; -fx-background-radius: 0; }
+.sidebar-button:hover { -fx-background-color: -sidebar-button-hover; -fx-text-fill: white; }
 .sidebar-button:selected { -fx-background-color: -sidebar-button-selected; -fx-text-fill: white; }
-
-/* FIX: Reverted icon style to the original smaller size */
-.icon {
-    -fx-fill: #A9B7D1;
-    -fx-font-size: 1.2em;
-}
+.icon { -fx-fill: #A9B7D1; -fx-font-size: 1.2em; }
 .sidebar-button:hover .icon, .sidebar-button:selected .icon { -fx-fill: white; }
 
-/* --- Labels --- */
-.label { -fx-text-fill: -soft-white-text; -fx-font-family: "Fira Code Regular"; }
-.h1, .h2, .h3, .total-pnl-label, .note-date, .negative-text, .positive-text, .welcome-label { -fx-font-family: "Fira Code Bold"; }
-.h1 { -fx-font-size: 24px; }
-.h2 { -fx-font-size: 20px; }
-.h3 { -fx-font-size: 16px; }
-.negative-text { -fx-text-fill: -negative-color; }
-.positive-text { -fx-text-fill: -positive-color; }
-.rule-text { -fx-font-size: 14px; }
-.note-text { -fx-text-fill: -dim-white-text; }
-.day-label { -fx-font-size: 10px; -fx-text-fill: -dim-white-text; }
-.max-loss-label { -fx-font-family: "Fira Code Bold"; -fx-text-fill: -negative-color; -fx-font-size: 9px; }
-.welcome-label { -fx-font-family: "Fira Code Bold"; -fx-font-size: 28px; -fx-text-fill: white; }
+/* --- Settings Screen Tabs --- */
+.tab-pane { -fx-background-color: -app-bg-color; -fx-focus-color: transparent; -fx-faint-focus-color: transparent; }
+.tab-pane .tab-header-area .tab-header-background { -fx-background-color: -frame-bg-color; }
+.tab-pane .tab { -fx-background-color: -frame-bg-color; -fx-background-insets: 0; -fx-background-radius: 5 5 0 0; -fx-padding: 8 20 8 20; }
+.tab-pane .tab:selected { -fx-background-color: -sidebar-color; }
+.tab-pane .tab:selected .focus-indicator { -fx-border-color: transparent; }
+.tab-pane .tab .tab-label { -fx-text-fill: -dim-white-text; -fx-font-family: "Fira Code Regular"; }
+.tab-pane .tab:selected .tab-label { -fx-text-fill: -soft-white-text; }
+.tab-pane > .tab-content-area { -fx-background-color: -sidebar-color; }
 
-/* --- General Button Styles --- */
-.standard-button, .exit-button, .ud-button, .filter-button, .cancel-button, .back-button, .icon-button { -fx-font-family: "Fira Code Bold"; -fx-text-fill: white; -fx-background-radius: 8; -fx-cursor: hand; -fx-border-width: 0; -fx-effect: none; }
-.standard-button:focused, .exit-button:focused, .ud-button:focused, .filter-button:focused, .window-button:focused, .window-button-close:focused, .cancel-button:focused, .back-button:focused, .icon-button:focused { -fx-focus-color: transparent; -fx-faint-focus-color: transparent; -fx-outer-border: transparent; }
-.standard-button { -fx-font-size: 14px; -fx-padding: 8 15 8 15; -fx-background-color: -button-color; }
-.standard-button:hover { -fx-background-color: -button-hover-color; }
-.exit-button { -fx-font-size: 14px; -fx-padding: 8 15 8 15; -fx-background-color: -negative-color; }
-.exit-button:hover { -fx-background-color: -negative-hover-color; }
-.ud-button { -fx-font-size: 11px; -fx-padding: 4 8 4 8; -fx-background-color: #503030; }
-.ud-button:hover { -fx-background-color: #704040; }
-.filter-button { -fx-font-size: 11px; -fx-padding: 4 8 4 8; -fx-background-color: #333; }
-.filter-button:hover { -fx-background-color: #555; }
-.cancel-button { -fx-font-size: 12px; -fx-padding: 6 12 6 12; -fx-background-color: #424242; }
-.cancel-button:hover { -fx-background-color: #616161; }
-.back-button { -fx-background-color: transparent; -fx-text-fill: -dim-white-text; -fx-font-family: "Fira Code Regular"; -fx-font-size: 14px; -fx-border-color: -border-color; -fx-border-radius: 8; -fx-padding: 6 12 6 12; }
-.back-button:hover { -fx-background-color: -sidebar-button-hover; -fx-text-fill: -soft-white-text; -fx-border-color: -button-color; }
-.icon-button { -fx-font-size: 12px; -fx-padding: 4 8 4 8; -fx-background-color: #424242; -fx-text-fill: -soft-white-text; }
-.icon-button:hover { -fx-background-color: #555; }
-.image-action-button { -fx-background-color: #424242; -fx-padding: 6 10 6 10; -fx-background-radius: 5; -fx-cursor: hand; }
-.image-action-button .ikonli-font-icon { -fx-icon-size: 14; -fx-fill: -soft-white-text; }
-.image-action-button:hover { -fx-background-color: #616161; }
-.image-action-button.delete-button:hover { -fx-background-color: -negative-color; }
+/* --- CheckBox & ToggleButton --- */
+.check-box .text { -fx-fill: -soft-white-text; }
+.settings-toggle-button { -fx-background-color: -frame-bg-color; -fx-text-fill: -soft-white-text; -fx-border-color: -border-color; -fx-background-radius: 15; -fx-border-radius: 15; -fx-pref-width: 50; -fx-font-family: "Fira Code Bold"; }
+.settings-toggle-button:selected { -fx-background-color: -positive-color; -fx-border-color: -positive-color; }
 
-/* --- Text Fields & Areas --- */
+/* --- Text Fields & Areas (Dark Theme) --- */
 .text-field, .text-area { -fx-font-family: "Fira Code Regular"; -fx-background-color: -frame-bg-color; -fx-text-fill: -soft-white-text; -fx-font-size: 12px; -fx-background-radius: 8; -fx-border-color: -border-color; -fx-border-radius: 8; }
 .text-area .content { -fx-background-color: -frame-bg-color; }
+.text-area .scroll-pane .viewport { -fx-background-color: -frame-bg-color; }
 .description-area { -fx-font-size: 14px; }
-.non-editable-text { -fx-background-color: transparent; -fx-border-color: transparent; -fx-text-fill: -soft-white-text; -fx-cursor: default; }
-.editable-text { -fx-background-color: -frame-bg-color; -fx-border-color: -border-color; -fx-border-radius: 8px; -fx-text-fill: -soft-white-text; -fx-cursor: text; }
 
-/* --- Specific View Styles --- */
-.settings-section { -fx-background-color: -frame-bg-color; -fx-padding: 20; -fx-background-radius: 10; }
-.note-box { -fx-background-color: -frame-bg-color; -fx-background-radius: 10; -fx-padding: 10; }
+/* --- On-Top Widget (Dark Theme) --- */
 .on-top-widget { -fx-background-color: -frame-bg-color; -fx-background-radius: 8; -fx-border-color: -border-color; -fx-border-radius: 8; }
-.dialog-pane { -fx-background-color: -app-bg-color; -fx-border-color: -border-color; }
-.dialog-pane .header-panel { -fx-background-color: -frame-bg-color; }
-.dialog-pane .header-panel .label { -fx-font-style: italic; -fx-text-fill: -dim-white-text; }
 
-/* --- Checkbox --- */
-.check-box { -fx-text-fill: -soft-white-text; -fx-padding: 8px; -fx-background-color: -frame-bg-color; -fx-background-radius: 8px; -fx-border-color: -border-color; -fx-border-radius: 8px; -fx-cursor: hand; }
-.check-box:hover { -fx-border-color: -button-color; }
-.check-box .box { -fx-background-color: transparent; -fx-border-color: transparent; }
-.check-box .mark { -fx-shape: "M13.5,2 C12.6715729,2 12,2.67157288 12,3.5 C12,4.32842712 12.6715729,5 13.5,5 C14.3284271,5 15,4.32842712 15,3.5 C15,2.67157288 14.3284271,2 13.5,2 z M20,12 L20,12 L4,12 C2.8954305,12 2,12.8954305 2,14 C2,15.1045695 2.8954305,16 4,16 L20,16 C21.1045695,16 22,15.1045695 22,14 C22,12.8954305 21.1045695,12 20,12 z M10.5,20 C9.67157288,20 9,20.6715729 9,21.5 C9,22.3284271 9.67157288,23 10.5,23 C11.3284271,23 12,22.3284271 12,21.5 C12,20.6715729 11.3284271,20 10.5,20 z"; -fx-background-color: -dim-white-text; -fx-pref-width: 24px; -fx-pref-height: 24px; }
-.check-box:selected .mark { -fx-shape: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"; -fx-background-color: -positive-color; }
-.check-box:selected { -fx-border-color: -positive-color; }
-.widget-checkbox { -fx-font-size: 12px; -fx-padding: 5px; }
-
-/* --- Calendar & Chart --- */
-.calendar-grid { -fx-background-color: #1c1c1c; -fx-background-radius: 10; -fx-padding: 5; }
+/* --- Calendar & Chart (Dark Theme) --- */
+.calendar-grid { -fx-background-color: -sidebar-color; -fx-background-radius: 10; -fx-padding: 5; }
 .calendar-day-cell { -fx-border-color: #2a2a2a; -fx-background-color: -frame-bg-color; -fx-padding: 3; }
 .positive-day { -fx-background-color: -positive-color; }
 .positive-day .label { -fx-text-fill: black; }
 .negative-day { -fx-background-color: -negative-color; }
 .negative-day .label { -fx-text-fill: black; }
-.totals-cell { -fx-border-color: #2a2a2a; -fx-background-color: -frame-bg-color; -fx-padding: 3; }
 .chart-plot-background { -fx-background-color: -frame-bg-color; }
-.chart-vertical-grid-lines, .chart-horizontal-grid-lines { -fx-stroke: #2a2a2a; }
 .axis { -fx-tick-label-fill: -dim-white-text; }
-.default-color0.chart-series-line { -fx-stroke: -positive-color; -fx-stroke-width: 2px; }
-.positive-day-circle { -fx-fill: -positive-color; }
-.negative-day-circle { -fx-fill: -negative-color; }
-.no-pnl-day-circle { -fx-fill: -border-color; }
 
-/* --- Setup & Example Cards --- */
-.setup-box { -fx-background-color: -frame-bg-color; -fx-padding: 15; -fx-background-radius: 8; -fx-border-color: -border-color; -fx-border-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0, 0, 2); }
-.setup-box:hover { -fx-border-color: -button-color; -fx-background-color: #181818; }
-.setup-icon { -fx-icon-size: 28px; -fx-fill: -button-color; }
-.example-card { -fx-background-color: -frame-bg-color; -fx-padding: 20; -fx-background-radius: 8; -fx-border-color: -border-color; -fx-border-radius: 8; -fx-cursor: hand; }
-.example-card:hover { -fx-border-color: -button-hover-color; -fx-background-color: #1c1c1c; }
-.won-icon { -fx-icon-size: 32px; -fx-fill: -positive-color; }
-.lost-icon { -fx-icon-size: 32px; -fx-fill: -negative-color; }
-.image-container { -fx-background-radius: 6; -fx-background-color: black; }
-.image-container .image-view { -fx-background-radius: 6; }
-.image-actions-overlay { -fx-background-color: rgba(0, 0, 0, 0.6); -fx-opacity: 0; -fx-background-radius: 6; -fx-transition: -fx-opacity 0.2s ease-in-out; }
-.setup-box:hover .image-actions-overlay { -fx-opacity: 1; }
-
-/* Tag Labels */
-.tag-label { -fx-background-color: -border-color; -fx-background-radius: 5; -fx-text-fill: -soft-white-text; -fx-padding: 4 8 4 8; -fx-font-size: 11px; }
-.grade-a-plus { -fx-background-color: -positive-color; -fx-text-fill: white; -fx-font-family: "Fira Code Bold"; }
-.grade-a { -fx-background-color: #388E3C; -fx-text-fill: white; }
-.grade-b-plus { -fx-background-color: #f59e0b; }
-.grade-c-plus { -fx-background-color: -negative-color; -fx-text-fill: white; }
-
-/* --- Dashboard Drag & Drop --- */
-.draggable-widget { -fx-cursor: move; -fx-border-color: -button-color; -fx-border-style: dashed; -fx-border-width: 1px; -fx-opacity: 0.8; }
-.drag-over-widget { -fx-background-color: -sidebar-button-hover; -fx-scale-x: 1.02; -fx-scale-y: 1.02; }
-
-/* === ADD ALL OF THESE STYLES TO THE END OF YOUR CSS FILE === */
-
-/* --- Animated Background --- */
-@keyframes background-pan {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-.animated-background.main-view, .animated-background.content-pane {
-    -fx-background-size: 400% 400%;
-    -fx-background-image: radial-gradient(circle at 10% 10%, #001f3f, -app-bg-color 40%),
-                          radial-gradient(circle at 80% 90%, #85144b, -app-bg-color 40%);
-    animation: background-pan 30s ease-in-out infinite;
-}
-
-/* --- Glassmorphism Widgets --- */
-.glass-widget {
-    -fx-background-color: rgba(30, 30, 30, 0.5);
-    -fx-background-radius: 12;
-    -fx-border-color: rgba(255, 255, 255, 0.15);
-    -fx-border-radius: 12;
-    -fx-border-width: 1px;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);
-    -fx-padding: 15px; /* <-- Add this line */
-}
-
-/* --- Settings Screen ToggleButton --- */
-.toggle-button {
-    -fx-background-color: -frame-bg-color;
-    -fx-text-fill: -soft-white-text;
-    -fx-border-color: -border-color;
-    -fx-background-radius: 15;
-    -fx-border-radius: 15;
-    -fx-pref-width: 50;
-}
-.toggle-button:selected {
-    -fx-background-color: -positive-color;
-    -fx-border-color: -positive-color;
-}
-
-/* --- Visual Journal Timeline --- */
-.timeline-spine {
-    -fx-background-color: -border-color;
-    -fx-min-width: 2px;
-    -fx-max-width: 2px;
-}
-.timeline-dot {
-    -fx-icon-color: -button-color;
-    -fx-icon-size: 14px;
-}
-.timeline-day {
-    -fx-font-family: "Fira Code Bold";
-    -fx-font-size: 24px;
-    -fx-text-fill: -soft-white-text;
-}
-.timeline-month {
-    -fx-font-size: 12px;
-    -fx-text-fill: -dim-white-text;
-}
-.timeline-card-right {
-    -fx-border-color: transparent transparent transparent -button-color;
-    -fx-border-width: 2;
-    -fx-padding: 10 10 10 15;
-}
-.timeline-card-left {
-    -fx-border-color: transparent -button-color transparent transparent;
-    -fx-border-width: 2;
-    -fx-padding: 10 15 10 10;
-}
-
-/* --- Sparkline Path --- */
-.sparkline-path {
-    -fx-stroke: -button-color;
-    -fx-stroke-width: 2px;
-    -fx-fill: transparent;
-}
-
-/* === ADD THESE NEW STYLES TO THE END OF YOUR CSS FILE === */
-
-.drop-target-pane {
-    -fx-background-color: rgba(42, 42, 42, 0.5);
-    -fx-background-radius: 12;
-    -fx-border-color: -border-color;
-    -fx-border-radius: 12;
-    -fx-border-style: dashed;
-    -fx-border-width: 2px;
-    -fx-min-height: 150px; /* Give empty cells a default size */
-}
+/* Other styles omitted for brevity but should be kept in your file */
