@@ -28,14 +28,10 @@
             
             <!-- Modified description container -->
             <VBox fx:id="descriptionContainer" spacing="5.0">
-               <TextArea fx:id="descriptionArea" prefHeight="150.0" wrapText="true" />
-               <HBox alignment="BOTTOM_RIGHT">
+               <TextArea fx:id="descriptionArea" prefHeight="150.0" wrapText="true" maxWidth="Infinity" />
+               <HBox alignment="BOTTOM_RIGHT" maxWidth="Infinity">
                   <Pane HBox.hgrow="ALWAYS" />
-                  <Button fx:id="editDescriptionButton" onAction="#handleEditDescription" styleClass="icon-button" text="Edit">
-                     <HBox.margin>
-                        <Insets right="5.0" />
-                     </HBox.margin>
-                  </Button>
+                  <Button fx:id="editDescriptionButton" onAction="#handleEditDescription" styleClass="icon-button" text="Edit" />
                   <Button fx:id="saveDescriptionButton" onAction="#handleSaveDescription" styleClass="standard-button" text="Save" />
                </HBox>
             </VBox>

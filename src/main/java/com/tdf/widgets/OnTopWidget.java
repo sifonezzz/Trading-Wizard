@@ -1,8 +1,8 @@
 package com.tdf.widgets;
 
 import com.tdf.MainApp;
+import com.tdf.controllers.EndSessionController;
 import com.tdf.data.Settings;
-import com.tdf.dialogs.EndSessionController; // THIS IS THE CRITICAL FIX
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.fxml.FXMLLoader;
@@ -40,8 +40,8 @@ public class OnTopWidget extends Stage {
         initStyle(StageStyle.TRANSPARENT);
         setAlwaysOnTop(true);
         
-        setX(0);
-        setY(0);
+        setX(100);
+        setY(100);
 
         BorderPane root = new BorderPane();
         root.getStyleClass().add("on-top-widget");
@@ -50,6 +50,7 @@ public class OnTopWidget extends Stage {
             xOffset = event.getSceneX();
             yOffset = event.getSceneY();
         });
+        
         root.setOnMouseDragged(event -> {
             setX(event.getScreenX() - xOffset);
             setY(event.getScreenY() - yOffset);
@@ -113,8 +114,9 @@ public class OnTopWidget extends Stage {
         try {
             Stage dialogStage = new Stage();
             dialogStage.initOwner(mainApp.getPrimaryStage());
-            dialogStage.initStyle(StageStyle.UNDECORATED);
-
+            dialogStage.initStyle(StageStyle.TRANSPARENT);
+            dialogStage.setAlwaysOnTop(true);
+            
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/tdf/fxml/EndSession.fxml"));
             Parent root = loader.load();
             
@@ -123,10 +125,14 @@ public class OnTopWidget extends Stage {
 
             Scene scene = new Scene(root);
             scene.setFill(Color.TRANSPARENT);
-            scene.getStylesheets().add(Objects.requireNonNull(mainApp.getClass().getResource("/com/tdf/styles.css")).toExternalForm());
+            scene.getStylesheets().add(
+                Objects.requireNonNull(
+                    mainApp.getClass().getResource("/com/tdf/styles.css")
+                ).toExternalForm()
+            );
             
             dialogStage.setScene(scene);
-            dialogStage.show();
+            dialogStage.showAndWait();
 
         } catch (IOException e) {
             e.printStackTrace();

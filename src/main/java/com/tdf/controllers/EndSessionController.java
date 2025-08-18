@@ -1,4 +1,4 @@
-package com.tdf.dialogs;
+package com.tdf.controllers;
 
 import com.tdf.MainApp;
 import com.tdf.data.DataManager;
@@ -71,4 +71,6 @@ public class EndSessionController {
             System.err.println("Invalid PNL format");
         }
     }
+
+    
 }

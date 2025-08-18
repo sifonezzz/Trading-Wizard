@@ -37,6 +37,8 @@ public class DashboardController implements Controller {
         this.mainApp = mainApp;
         this.dataManager = MainApp.getDataManager();
         buildDashboard();
+
+        
     }
     
     private void buildDashboard() {
