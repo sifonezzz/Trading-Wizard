@@ -31,8 +31,9 @@ import javafx.util.Duration;
 
 import java.io.IOException;
 
-public class MainViewController implements Controller {
 
+public class MainViewController implements Controller {
+    private String currentViewFxml = "";
     @FXML private StackPane rootStackPane;
     @FXML private BorderPane rootPane;
     @FXML private BorderPane contentPane;
@@ -193,63 +194,74 @@ public class MainViewController implements Controller {
     }
 
     private void loadView(String fxmlFile) {
-        Node currentView = contentPane.getCenter();
-        Runnable loadAction = () -> {
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/tdf/fxml/" + fxmlFile));
-                Node newView = loader.load();
-                
-                Object controller = loader.getController();
-                if (controller instanceof Controller) {
-                    ((Controller) controller).setMainApp(mainApp);
-                }
-
-                newView.setOpacity(0);
-                contentPane.setCenter(newView);
-                Platform.runLater(() -> {
-                    FadeTransition fadeIn = new FadeTransition(Duration.millis(250), newView);
-                    fadeIn.setFromValue(0);
-                    fadeIn.setToValue(1);
-                    fadeIn.play();
-                });
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        };
-
-        if (currentView != null) {
-            FadeTransition fadeOut = new FadeTransition(Duration.millis(250), currentView);
-            fadeOut.setFromValue(1);
-            fadeOut.setToValue(0);
-            fadeOut.setOnFinished(event -> loadAction.run());
-            fadeOut.play();
-        } else {
-            loadAction.run();
-        }
+    // If the view we're trying to load is already the current one, do nothing.
+    if (fxmlFile.equals(currentViewFxml)) {
+        return;
     }
-    
-    public void setContent(Node node) {
-        Node currentView = contentPane.getCenter();
-        Runnable setAction = () -> {
-            node.setOpacity(0);
-            contentPane.setCenter(node);
+
+    Node currentView = contentPane.getCenter();
+    Runnable loadAction = () -> {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/tdf/fxml/" + fxmlFile));
+            Node newView = loader.load();
+
+            Object controller = loader.getController();
+            if (controller instanceof Controller) {
+                ((Controller) controller).setMainApp(mainApp);
+            }
+
+            newView.setOpacity(0);
+            contentPane.setCenter(newView);
             Platform.runLater(() -> {
-                FadeTransition fadeIn = new FadeTransition(Duration.millis(250), node);
+                FadeTransition fadeIn = new FadeTransition(Duration.millis(250), newView);
+                fadeIn.setFromValue(0);
                 fadeIn.setToValue(1);
                 fadeIn.play();
             });
-        };
 
-        if (currentView != null) {
-            FadeTransition fadeOut = new FadeTransition(Duration.millis(250), currentView);
-            fadeOut.setToValue(0);
-            fadeOut.setOnFinished(e -> setAction.run());
-            fadeOut.play();
-        } else {
-            setAction.run();
+            // After loading, update the current view tracker.
+            currentViewFxml = fxmlFile;
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+    };
+
+    if (currentView != null) {
+        FadeTransition fadeOut = new FadeTransition(Duration.millis(250), currentView);
+        fadeOut.setFromValue(1);
+        fadeOut.setToValue(0);
+        fadeOut.setOnFinished(event -> loadAction.run());
+        fadeOut.play();
+    } else {
+        loadAction.run();
     }
+}
+    
+    public void setContent(Node node) {
+    // Reset the view tracker since this is not a main view loaded from the sidebar.
+    currentViewFxml = ""; 
+
+    Node currentView = contentPane.getCenter();
+    Runnable setAction = () -> {
+        node.setOpacity(0);
+        contentPane.setCenter(node);
+        Platform.runLater(() -> {
+            FadeTransition fadeIn = new FadeTransition(Duration.millis(250), node);
+            fadeIn.setToValue(1);
+            fadeIn.play();
+        });
+    };
+
+    if (currentView != null) {
+        FadeTransition fadeOut = new FadeTransition(Duration.millis(250), currentView);
+        fadeOut.setToValue(0);
+        fadeOut.setOnFinished(e -> setAction.run());
+        fadeOut.play();
+    } else {
+        setAction.run();
+    }
+}
 
     @FXML public void showDashboard() { loadView("Dashboard.fxml"); }
     @FXML private void showJournal() { loadView("NotesView.fxml"); }
@@ -295,10 +307,21 @@ public class MainViewController implements Controller {
     }
 
     public void showSidebarAndDashboard() {
+        // Reset the main layout to show the content area and sidebar
         rootPane.setCenter(contentPane);
         rootPane.setLeft(sidebar);
-        contentPane.setCenter(null);
-        triggerSimpleWelcomeAnimation("Welcome Back");
+        contentPane.setCenter(null); // Clear any old view
+
+        // Immediately animate the sidebar into view
+        animateSidebar(true);
+
+        // Immediately load and fade in the dashboard
+        showDashboard();
+        
+        // Ensure the Dashboard button is selected in the sidebar
+        if (dashboardButton != null) {
+            dashboardButton.setSelected(true);
+        }
     }
 
     @FXML private void handleClose() { Platform.exit(); }

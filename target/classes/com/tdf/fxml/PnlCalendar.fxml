@@ -42,14 +42,13 @@
           <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="110.0" prefWidth="110.0" />
         </columnConstraints>
         <rowConstraints>
-          <RowConstraints minHeight="50.0" prefHeight="50.0" valignment="CENTER" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="60.0" prefHeight="60.0" valignment="CENTER" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="60.0" prefHeight="60.0" valignment="CENTER" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="60.0" prefHeight="60.0" valignment="CENTER" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="60.0" prefHeight="60.0" valignment="CENTER" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="60.0" prefHeight="60.0" valignment="CENTER" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="60.0" prefHeight="60.0" valignment="CENTER" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="60.0" prefHeight="60.0" valignment="CENTER" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="40.0" prefHeight="40.0" valignment="CENTER" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="70.0" prefHeight="70.0" valignment="CENTER" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="70.0" prefHeight="70.0" valignment="CENTER" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="70.0" prefHeight="70.0" valignment="CENTER" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="70.0" prefHeight="70.0" valignment="CENTER" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="70.0" prefHeight="70.0" valignment="CENTER" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="70.0" prefHeight="70.0" valignment="CENTER" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
             <Label text="MON" />

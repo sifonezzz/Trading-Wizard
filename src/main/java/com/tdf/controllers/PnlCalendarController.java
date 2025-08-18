@@ -14,6 +14,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 import java.time.LocalDate;
@@ -64,29 +67,48 @@ public class PnlCalendarController implements Controller {
                 dayCell.setAlignment(Pos.CENTER);
                 dayCell.getStyleClass().add("calendar-day-cell");
 
-                if (!((row == 1 && col < firstDayOfWeek -1) || day > daysInMonth)) {
+                if (!((row == 1 && col < firstDayOfWeek - 1) || day > daysInMonth)) {
+                    // Always create all potential labels to ensure consistent cell size
                     Label dayLabel = new Label(String.valueOf(day));
                     dayLabel.getStyleClass().add("day-label");
-                    dayCell.getChildren().add(dayLabel);
+
+                    Label pnlLabel = new Label("$0.00"); // Placeholder text
+                    pnlLabel.setVisible(false); // Invisible by default
+
+                    HBox detailsBox = new HBox();
+                    detailsBox.setAlignment(Pos.CENTER_LEFT);
+                    Label udLabel = new Label("UD: X"); // Placeholder
+                    Label maxLossLabel = new Label("PAST MAX LOSS");
                     
+                    udLabel.setVisible(false); // Invisible by default
+                    maxLossLabel.setVisible(false); // Invisible by default
+                    
+                    udLabel.getStyleClass().add("details-label");
+                    maxLossLabel.getStyleClass().addAll("max-loss-label", "details-label");
+                    
+                    Pane spacer = new Pane();
+                    HBox.setHgrow(spacer, Priority.ALWAYS);
+                    detailsBox.getChildren().addAll(udLabel, spacer, maxLossLabel);
+
+                    dayCell.getChildren().addAll(dayLabel, pnlLabel, detailsBox);
+                    
+                    // Now, check for actual data and make the necessary labels visible
                     String dateStr = currentMonth.atDay(day).toString();
                     PnlEntry pnlEntry = dataManager.getPnlData().get(dateStr);
                     if (pnlEntry != null) {
                         double pnl = pnlEntry.pnl;
                         weeklyPnls[row-1] += pnl;
                         
-                        Label pnlLabel = new Label(String.format("$%.2f", pnl));
-                        dayCell.getChildren().add(pnlLabel);
+                        pnlLabel.setText(String.format("$%.2f", pnl));
+                        pnlLabel.setVisible(true); // Make visible
+                        
                         if (pnlEntry.undisciplineCount > 0) {
-                            Label udLabel = new Label("UD: " + pnlEntry.undisciplineCount);
-                            dayCell.getChildren().add(udLabel);
+                            udLabel.setText("UD: " + pnlEntry.undisciplineCount);
+                            udLabel.setVisible(true); // Make visible
                         }
                         
                         if (pnlEntry.exceededMaxLoss) {
-                            Label maxLossLabel = new Label("PAST MAX LOSS");
-                            maxLossLabel.getStyleClass().add("max-loss-label");
-                            VBox.setMargin(maxLossLabel, new javafx.geometry.Insets(0, 0, 3, 0));
-                            dayCell.getChildren().add(maxLossLabel);
+                            maxLossLabel.setVisible(true); // Make visible
                         }
 
                         if (pnl >= 0) {

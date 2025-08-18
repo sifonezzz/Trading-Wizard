@@ -28,7 +28,9 @@ import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
 import javafx.util.Duration;
-
+import javafx.scene.SnapshotParameters;
+import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -174,22 +176,37 @@ public class DashboardController implements Controller {
     }
     
     private void enableDragAndDrop(Node widget) {
-        widget.getStyleClass().add("draggable-widget");
-        widget.setOnDragDetected(event -> {
-            Dragboard db = widget.startDragAndDrop(TransferMode.MOVE);
-            ClipboardContent content = new ClipboardContent();
-            content.putString("dragging");
-            db.setContent(content);
-            draggedWidget = (VBox) widget;
-            sourceCol = GridPane.getColumnIndex(draggedWidget);
-            sourceRow = GridPane.getRowIndex(draggedWidget);
-            event.consume();
-        });
-        widget.setOnDragDone(event -> {
-            widgetPane.getChildren().forEach(node -> node.getStyleClass().remove("drag-over-widget"));
-            draggedWidget = null;
-        });
-    }
+    widget.getStyleClass().add("draggable-widget");
+
+    widget.setOnDragDetected(event -> {
+        draggedWidget = (VBox) widget;
+        sourceCol = GridPane.getColumnIndex(draggedWidget);
+        sourceRow = GridPane.getRowIndex(draggedWidget);
+
+        Dragboard db = widget.startDragAndDrop(TransferMode.MOVE);
+
+        // Create a snapshot of the widget to use as a "ghost" image
+        SnapshotParameters params = new SnapshotParameters();
+        params.setFill(Color.TRANSPARENT);
+        Image snapshot = widget.snapshot(params, null);
+        db.setDragView(snapshot, event.getX(), event.getY());
+
+        ClipboardContent content = new ClipboardContent();
+        content.putString("dragging"); // A placeholder is needed
+        db.setContent(content);
+
+        // Make the original widget look faded
+        widget.setOpacity(0.4);
+        event.consume();
+    });
+
+    widget.setOnDragDone(event -> {
+        // Restore the widget's appearance when the drag is finished
+        widget.setOpacity(1.0);
+        widgetPane.getChildren().forEach(node -> node.getStyleClass().remove("drag-over-widget"));
+        draggedWidget = null;
+    });
+}
 
     private void enableDropTarget(Node target) {
         target.setOnDragOver(event -> {

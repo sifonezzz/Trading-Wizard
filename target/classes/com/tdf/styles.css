@@ -36,7 +36,13 @@
 .sidebar-title { -fx-font-family: "Fira Code Bold"; -fx-font-size: 20px; -fx-text-fill: white; }
 .sidebar-button { -fx-background-color: transparent; -fx-text-fill: #A9B7D1; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 10 10 10 20; -fx-background-radius: 0; }
 .sidebar-button:hover { -fx-background-color: -sidebar-button-hover; -fx-text-fill: white; }
-.sidebar-button:selected { -fx-background-color: -sidebar-button-selected; -fx-text-fill: white; }
+.sidebar-button:selected {
+    -fx-background-color: -sidebar-button-selected;
+    -fx-text-fill: white;
+}
+.sidebar-button:selected:hover {
+    -fx-background-color: -sidebar-button-selected;
+}
 .icon { -fx-fill: #A9B7D1; -fx-font-size: 1.2em; }
 .sidebar-button:hover .icon, .sidebar-button:selected .icon { -fx-fill: white; }
 
@@ -248,4 +254,9 @@
     -fx-text-fill: white;
     -fx-font-family: "Fira Code Bold";
     -fx-border-color: -positive-color;
+}
+
+.details-label {
+    -fx-font-family: "Fira Code Bold";
+    -fx-font-size: 8px; /* Changed from 9px to 8px */
 }
