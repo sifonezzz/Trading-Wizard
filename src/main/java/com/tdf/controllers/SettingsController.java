@@ -10,7 +10,6 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
-
 import java.io.File;
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -21,10 +20,12 @@ public class SettingsController implements Controller {
     @FXML private TextField maxLossField;
     @FXML private TextField intervalField;
     @FXML private TextField rulesScreenTimeField;
-    @FXML private CheckBox winRateCheckbox; // New field
+    @FXML private CheckBox winRateCheckbox;
     @FXML private TextArea tasksArea;
     @FXML private TextArea setupsArea;
     @FXML private TextArea rulesArea;
+    @FXML private CheckBox panicButtonCheckbox;
+    @FXML private TextField panicDurationField;
 
     private MainApp mainApp;
     private DataManager dataManager;
@@ -42,10 +43,12 @@ public class SettingsController implements Controller {
         maxLossField.setText(String.format("%.2f", currentSettings.maxLoss));
         intervalField.setText(String.valueOf(currentSettings.ruleIntervalSeconds));
         rulesScreenTimeField.setText(String.valueOf(currentSettings.rulesScreenSeconds));
-        winRateCheckbox.setSelected(currentSettings.showWinRate); // Load new value
+        winRateCheckbox.setSelected(currentSettings.showWinRate);
         tasksArea.setText(String.join("\n", currentSettings.tasks));
         setupsArea.setText(String.join("\n", currentSettings.setups));
         rulesArea.setText(String.join("\n", currentSettings.rules));
+        panicButtonCheckbox.setSelected(currentSettings.panicButtonEnabled);
+        panicDurationField.setText(String.valueOf(currentSettings.panicButtonDurationSeconds));
     }
 
     @FXML
@@ -54,7 +57,9 @@ public class SettingsController implements Controller {
             currentSettings.maxLoss = Double.parseDouble(maxLossField.getText());
             currentSettings.ruleIntervalSeconds = Integer.parseInt(intervalField.getText());
             currentSettings.rulesScreenSeconds = Integer.parseInt(rulesScreenTimeField.getText());
-            currentSettings.showWinRate = winRateCheckbox.isSelected(); // Save new value
+            currentSettings.panicButtonEnabled = panicButtonCheckbox.isSelected();
+            currentSettings.panicButtonDurationSeconds = Integer.parseInt(panicDurationField.getText());
+            currentSettings.showWinRate = winRateCheckbox.isSelected();
             currentSettings.tasks = Arrays.stream(tasksArea.getText().split("\\n")).collect(Collectors.toList());
             currentSettings.setups = Arrays.stream(setupsArea.getText().split("\\n")).collect(Collectors.toList());
             currentSettings.rules = Arrays.stream(rulesArea.getText().split("\\n")).collect(Collectors.toList());
@@ -73,7 +78,6 @@ public class SettingsController implements Controller {
         fileChooser.setInitialFileName("TradingWizard_Backup_" + LocalDate.now() + ".zip");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("ZIP Archives", "*.zip"));
         File file = fileChooser.showSaveDialog(mainApp.getPrimaryStage());
-
         if (file != null) {
             if (dataManager.createBackup(file)) {
                 showAlert(Alert.AlertType.INFORMATION, "Success", "Data backed up successfully to:\n" + file.getAbsolutePath());
@@ -89,7 +93,6 @@ public class SettingsController implements Controller {
         fileChooser.setTitle("Load Backup");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("ZIP Archives", "*.zip"));
         File file = fileChooser.showOpenDialog(mainApp.getPrimaryStage());
-
         if (file != null) {
             if (dataManager.restoreFromBackup(file)) {
                 loadSettings();

@@ -18,27 +18,16 @@
          <left>
             <VBox fx:id="sidebar" alignment="TOP_CENTER" spacing="10.0" styleClass="sidebar" visible="false" BorderPane.alignment="CENTER">
                <children>
-                  <Label styleClass="sidebar-title" text="Trading Wizard" />
                   <Pane VBox.vgrow="ALWAYS" />
                   <VBox fx:id="navigationBox" alignment="CENTER" spacing="5.0">
                      <children>
-                        <ToggleButton fx:id="dashboardButton" maxWidth="Infinity" onAction="#showDashboard" styleClass="sidebar-button" text="Dashboard">
-                           <graphic>
-                              <FontIcon iconLiteral="fas-tachometer-alt" styleClass="icon" />
-                           </graphic>
-                           <toggleGroup>
-                              <ToggleGroup fx:id="navigationGroup" />
-                           </toggleGroup>
-                        </ToggleButton>
-                        <ToggleButton maxWidth="Infinity" onAction="#showTradingFlow" styleClass="sidebar-button" text="Start Session" toggleGroup="$navigationGroup">
-                           <graphic>
-                              <FontIcon iconLiteral="fas-play-circle" styleClass="icon" />
-                           </graphic>
-                        </ToggleButton>
                         <ToggleButton maxWidth="Infinity" onAction="#showJournal" styleClass="sidebar-button" text="Journal" toggleGroup="$navigationGroup">
                            <graphic>
                               <FontIcon iconLiteral="fas-book-open" styleClass="icon" />
                            </graphic>
+                           <toggleGroup>
+                              <ToggleGroup fx:id="navigationGroup" />
+                           </toggleGroup>
                         </ToggleButton>
                         <ToggleButton maxWidth="Infinity" onAction="#showCalendar" styleClass="sidebar-button" text="Calendar" toggleGroup="$navigationGroup">
                            <graphic>
@@ -50,9 +39,14 @@
                               <FontIcon iconLiteral="fas-lightbulb" styleClass="icon" />
                            </graphic>
                         </ToggleButton>
-                        <ToggleButton maxWidth="Infinity" onAction="#showSettings" styleClass="sidebar-button" text="Settings" toggleGroup="$navigationGroup">
+                        <ToggleButton maxWidth="Infinity" onAction="#showAnalytics" styleClass="sidebar-button" text="Analytics" toggleGroup="$navigationGroup">
                            <graphic>
-                              <FontIcon iconLiteral="fas-cog" styleClass="icon" />
+                              <FontIcon iconLiteral="fas-chart-pie" styleClass="icon" />
+                           </graphic>
+                        </ToggleButton>
+                        <ToggleButton maxWidth="Infinity" onAction="#showGoals" styleClass="sidebar-button" text="Goals" toggleGroup="$navigationGroup">
+                           <graphic>
+                              <FontIcon iconLiteral="fas-flag-checkered" styleClass="icon" />
                            </graphic>
                         </ToggleButton>
                      </children>
@@ -76,15 +70,37 @@
             <BorderPane fx:id="contentPane" styleClass="content-pane" BorderPane.alignment="CENTER" />
          </center>
          <top>
-            <HBox fx:id="titleBar" alignment="CENTER_LEFT" styleClass="title-bar" BorderPane.alignment="CENTER">
+            <StackPane fx:id="titleBar" styleClass="title-bar">
                <children>
-                  <Label fx:id="windowTitle" styleClass="window-title" text="Trading Wizard" />
-                  <Pane HBox.hgrow="ALWAYS" />
-                  <Button onAction="#handleMinimize" styleClass="window-button" text="_" />
-                  <Button onAction="#handleMaximize" styleClass="window-button" text="[]" />
-                  <Button onAction="#handleClose" styleClass="window-button-close" text="X" />
+                  <HBox alignment="CENTER_LEFT" spacing="20.0" StackPane.alignment="CENTER_LEFT">
+                     <children>
+                        <Label fx:id="windowTitle" onMouseClicked="#handleTitleClick" styleClass="window-title-clickable" text="Trading Wizard" />
+                     </children>
+                  </HBox>
+                  <HBox alignment="CENTER" spacing="10.0" StackPane.alignment="CENTER">
+                     <children>
+                        <Button fx:id="startSessionButton" styleClass="top-bar-action-button" text="Start Session" />
+                        <Button fx:id="afterTradingButton" styleClass="top-bar-action-button" text="After-trading Session" />
+                     </children>
+                  </HBox>
+                  <HBox alignment="CENTER_RIGHT" StackPane.alignment="CENTER_RIGHT">
+                     <children>
+                        <Button onAction="#showSettings" styleClass="icon-button">
+                           <graphic>
+                              <FontIcon iconLiteral="fas-cog" styleClass="icon" />
+                           </graphic>
+                        </Button>
+                        <HBox alignment="CENTER_LEFT">
+                           <children>
+                              <Button onAction="#handleMinimize" styleClass="window-button" text="_" />
+                              <Button onAction="#handleMaximize" styleClass="window-button" text="[]" />
+                              <Button onAction="#handleClose" styleClass="window-button-close" text="X" />
+                           </children>
+                        </HBox>
+                     </children>
+                  </HBox>
                </children>
-            </HBox>
+            </StackPane>
          </top>
       </BorderPane>
       <Label fx:id="welcomeLabel" styleClass="welcome-label" text="Welcome" visible="false" />

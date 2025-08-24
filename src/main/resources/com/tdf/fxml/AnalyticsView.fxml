@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.ScatterChart?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane styleClass="main-view" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.tdf.controllers.AnalyticsController">
+   <top>
+      <VBox alignment="CENTER" spacing="10.0">
+         <children>
+            <Label styleClass="h1" text="Analytics &amp; Reports" />
+            <HBox alignment="CENTER_RIGHT" spacing="10.0">
+               <children>
+                  <Label text="Timeframe:" />
+                  <ComboBox fx:id="timeframeComboBox" prefWidth="150.0" />
+                  <Button fx:id="exportButton" onAction="#handleExportToCsv" styleClass="filter-button" text="Export to CSV" />
+               </children>
+               <VBox.margin>
+                  <Insets right="20.0" />
+               </VBox.margin>
+            </HBox>
+         </children>
+         <padding>
+            <Insets top="20.0" />
+         </padding>
+      </VBox>
+   </top>
+   <center>
+      <TabPane styleClass="transparent-tabs" tabClosingPolicy="UNAVAILABLE">
+         <tabs>
+            <Tab text="Performance Metrics">
+               <content>
+                  <ScrollPane fitToWidth="true" styleClass="scroll-pane">
+                     <content>
+                        <FlowPane hgap="20.0" styleClass="content-pane" vgap="20.0">
+                           <children>
+                              <VBox minWidth="300.0" styleClass="note-box">
+                                 <children>
+                                    <Label styleClass="metric-card-title" text="Total Net PNL" />
+                                    <Label fx:id="totalPnlLabel" styleClass="h1" />
+                                 </children>
+                              </VBox>
+                              <VBox minWidth="300.0" styleClass="note-box">
+                                 <children>
+                                    <Label styleClass="metric-card-title" text="Profit Factor" />
+                                    <Label fx:id="profitFactorLabel" styleClass="h1" />
+                                 </children>
+                              </VBox>
+                              <VBox minWidth="300.0" styleClass="note-box">
+                                 <children>
+                                    <Label styleClass="metric-card-title" text="Win Rate (Days)" />
+                                    <Label fx:id="winRateLabel" styleClass="h1" />
+                                    <Label fx:id="winLossDaysLabel" styleClass="note-text" />
+                                 </children>
+                              </VBox>
+                              <VBox minWidth="300.0" styleClass="note-box">
+                                 <children>
+                                    <Label styleClass="metric-card-title" text="Average Day PNL" />
+                                    <Label fx:id="avgPnlLabel" styleClass="h1" />
+                                    <Label fx:id="avgWinLossLabel" styleClass="note-text" />
+                                 </children>
+                              </VBox>
+                              <VBox minWidth="300.0" styleClass="note-box">
+                                 <children>
+                                    <Label styleClass="metric-card-title" text="Max Drawdown" />
+                                    <Label fx:id="maxDrawdownLabel" styleClass="h1" />
+                                 </children>
+                              </VBox>
+                              <VBox minWidth="300.0" styleClass="note-box">
+                                 <children>
+                                    <Label styleClass="metric-card-title" text="Total Undisciplined Actions" />
+                                    <Label fx:id="totalUdLabel" styleClass="h1 negative-text" />
+                                 </children>
+                              </VBox>
+                           </children>
+                           <padding>
+                              <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                           </padding>
+                        </FlowPane>
+                     </content>
+                  </ScrollPane>
+               </content>
+            </Tab>
+            <Tab text="Discipline Analysis">
+               <content>
+                  <VBox alignment="CENTER" spacing="10.0" styleClass="content-pane">
+                     <Label styleClass="h3" text="PNL vs. Undisciplined Actions per Day" />
+                     <Label styleClass="note-text" text="This chart plots each trading day to show the relationship between indiscipline and performance." />
+                     <ScatterChart fx:id="disciplineChart" VBox.vgrow="ALWAYS">
+                        <xAxis>
+                           <NumberAxis label="Undisciplined Actions Count" side="BOTTOM" />
+                        </xAxis>
+                        <yAxis>
+                           <NumberAxis label="Daily PNL ($)" side="LEFT" />
+                        </yAxis>
+                     </ScatterChart>
+                     <padding>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="10.0" />
+                     </padding>
+                  </VBox>
+               </content>
+            </Tab>
+            </tabs>
+      </TabPane>
+   </center>
+</BorderPane>

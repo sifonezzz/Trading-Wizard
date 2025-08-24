@@ -1,3 +1,4 @@
+// FILE: src/main/java/com/tdf/data/Settings.java
 package com.tdf.data;
 
 import java.util.ArrayList;
@@ -15,6 +16,10 @@ public class Settings {
     public List<String> setups;
     public List<String> activeWidgets;
 
+    // --- NEW FIELDS for Panic Button ---
+    public boolean panicButtonEnabled;
+    public int panicButtonDurationSeconds;
+
     public static Settings createDefault() {
         Settings settings = new Settings();
         settings.maxLoss = 100.00;
@@ -22,18 +27,13 @@ public class Settings {
         settings.rulesScreenSeconds = 30;
         settings.showWinRate = false;
         settings.animatedBackground = false;
-        settings.rules = new ArrayList<>(Arrays.asList(
-            "Hyperscalp ONLY the dip after a strong push.",
-            "Do not ignore your SPECIFIC ENTRY POINTS."
-        ));
-        settings.tasks = new ArrayList<>(Arrays.asList(
-            "Open a stock scanner.",
-            "Start your 4 chart watchlist."
-        ));
-        settings.setups = new ArrayList<>(Arrays.asList(
-            "Accumulations (Small Caps)",
-            "Wash Reclaims (Small Caps)"
-        ));
+        // --- NEW DEFAULTS ---
+        settings.panicButtonEnabled = true;
+        settings.panicButtonDurationSeconds = 60;
+        // ... (rest of the default settings)
+        settings.rules = new ArrayList<>(Arrays.asList("Rule 1...", "Rule 2..."));
+        settings.tasks = new ArrayList<>(Arrays.asList("Task 1...", "Task 2..."));
+        settings.setups = new ArrayList<>(Arrays.asList("Setup 1...", "Setup 2..."));
         settings.activeWidgets = new ArrayList<>();
         return settings;
     }

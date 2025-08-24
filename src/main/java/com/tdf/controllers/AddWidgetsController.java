@@ -2,6 +2,7 @@ package com.tdf.controllers;
 
 import com.tdf.Controller;
 import com.tdf.MainApp;
+import com.tdf.data.Goal;
 import com.tdf.data.Settings;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -13,22 +14,17 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class AddWidgetsController implements Controller {
 
-    // Internal record to replace java.awt.Point, resolving compile errors
     private record Cell(int x, int y) {}
 
     @FXML private FlowPane widgetSelectionPane;
     private MainApp mainApp;
     private final Map<String, CheckBox> widgetCheckBoxes = new HashMap<>();
-    private static final String[] AVAILABLE_WIDGETS = {
+    
+    private static final List<String> AVAILABLE_WIDGETS = new ArrayList<>(Arrays.asList(
         "Latest Journal Note",
         "Previous Day PNL",
         "Current Month Calendar",
@@ -37,7 +33,7 @@ public class AddWidgetsController implements Controller {
         "PNL Streak Counter",
         "Best/Worst Day (Monthly)",
         "Rule of the Day"
-    };
+    ));
 
     @Override
     public void setMainApp(MainApp mainApp) {
@@ -48,14 +44,26 @@ public class AddWidgetsController implements Controller {
     private void populateWidgetSelection() {
         Settings settings = MainApp.getDataManager().getSettings();
         List<String> activeWidgets = settings.activeWidgets != null ? settings.activeWidgets : new ArrayList<>();
-        
-        // Determine which widgets are already active by name
         Set<String> activeWidgetNames = new HashSet<>();
         for (String layoutInfo : activeWidgets) {
             activeWidgetNames.add(layoutInfo.split(";")[0]);
         }
 
-        for (String widgetName : AVAILABLE_WIDGETS) {
+        List<String> dynamicWidgetList = new ArrayList<>(AVAILABLE_WIDGETS);
+        List<Goal> goals = MainApp.getDataManager().getGoals();
+        
+        // DEBUG: Print number of loaded goals to the console
+        System.out.println("Found " + goals.size() + " goals.");
+
+        Set<Goal.GoalType> existingGoalTypes = new HashSet<>();
+        for (Goal goal : goals) {
+            if (goal != null && !existingGoalTypes.contains(goal.getType())) {
+                dynamicWidgetList.add("Goal: " + goal.getDescription());
+                existingGoalTypes.add(goal.getType());
+            }
+        }
+        
+        for (String widgetName : dynamicWidgetList) {
             VBox previewBox = new VBox(10);
             previewBox.getStyleClass().add("note-box");
             previewBox.setPrefSize(250, 180);
@@ -72,7 +80,6 @@ public class AddWidgetsController implements Controller {
             
             Pane spacer = new Pane();
             VBox.setVgrow(spacer, Priority.ALWAYS);
-            
             VBox.setMargin(checkBox, new Insets(0, 10, 10, 10));
             
             widgetCheckBoxes.put(widgetName, checkBox);
@@ -99,18 +106,18 @@ public class AddWidgetsController implements Controller {
         for (Map.Entry<String, CheckBox> entry : widgetCheckBoxes.entrySet()) {
             String widgetName = entry.getKey();
             boolean isSelected = entry.getValue().isSelected();
-            String existingEntry = settings.activeWidgets.stream()
+            
+            String existingEntry = Optional.ofNullable(settings.activeWidgets).orElse(new ArrayList<>()).stream()
                 .filter(s -> s.startsWith(widgetName + ";"))
                 .findFirst().orElse(null);
-
+                
             if (isSelected) {
                 if (existingEntry != null) {
-                    newActiveWidgets.add(existingEntry); // Keep existing widget with its position
+                    newActiveWidgets.add(existingEntry);
                 } else {
-                    // Find the first empty cell for the new widget
                     Cell emptyCell = findFirstEmptyCell(occupiedCells);
                     newActiveWidgets.add(String.format("%s;%d;%d", widgetName, emptyCell.x(), emptyCell.y()));
-                    occupiedCells.add(emptyCell); // Reserve this cell for the next new widget
+                    occupiedCells.add(emptyCell);
                 }
             }
         }
@@ -122,8 +129,7 @@ public class AddWidgetsController implements Controller {
     }
 
     private Cell findFirstEmptyCell(Set<Cell> occupiedCells) {
-        // Assuming a 3xN grid
-        for (int r = 0; r < 10; r++) { // Check up to 10 rows
+        for (int r = 0; r < 10; r++) { 
             for (int c = 0; c < 3; c++) {
                 Cell cell = new Cell(c, r);
                 if (!occupiedCells.contains(cell)) {
@@ -131,6 +137,6 @@ public class AddWidgetsController implements Controller {
                 }
             }
         }
-        return new Cell(0, 0); // Fallback
+        return new Cell(0, 0);
     }
 }

@@ -2,124 +2,142 @@ package com.tdf.controllers;
 
 import com.tdf.Controller;
 import com.tdf.MainApp;
-import com.tdf.data.ExampleImage;
-import com.tdf.data.SetupSample;
+import com.tdf.data.Goal;
+import com.tdf.data.Settings;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.stage.FileChooser;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
-public class AddExampleController implements Controller {
+public class AddWidgetsController implements Controller {
 
-    @FXML private Label titleLabel;
-    @FXML private ImageView imageView;
-    @FXML private TextField tagsField;
+    private record Cell(int x, int y) {}
 
+    @FXML private FlowPane widgetSelectionPane;
     private MainApp mainApp;
-    private SetupSample currentSetup;
-    private String exampleType;
-    private File selectedImageFile;
+    private final Map<String, CheckBox> widgetCheckBoxes = new HashMap<>();
+    
+    // MODIFIED: Converted from array to a mutable list
+    private static final List<String> AVAILABLE_WIDGETS = new ArrayList<>(Arrays.asList(
+        "Latest Journal Note",
+        "Previous Day PNL",
+        "Current Month Calendar",
+        "Monthly Undiscipline Counter",
+        "Weekly/Monthly PNL Tracker",
+        "PNL Streak Counter",
+        "Best/Worst Day (Monthly)",
+        "Rule of the Day"
+    ));
 
     @Override
     public void setMainApp(MainApp mainApp) {
         this.mainApp = mainApp;
+        populateWidgetSelection();
     }
+    
+    private void populateWidgetSelection() {
+        Settings settings = MainApp.getDataManager().getSettings();
+        List<String> activeWidgets = settings.activeWidgets != null ? settings.activeWidgets : new ArrayList<>();
+        Set<String> activeWidgetNames = new HashSet<>();
+        for (String layoutInfo : activeWidgets) {
+            activeWidgetNames.add(layoutInfo.split(";")[0]);
+        }
 
-    public void setContext(SetupSample setup, String type) {
-        this.currentSetup = setup;
-        this.exampleType = type;
-        titleLabel.setText("Add " + type + " Example to " + setup.getName());
-    }
+        // --- NEW: Dynamically add available goal widgets ---
+        List<String> dynamicWidgetList = new ArrayList<>(AVAILABLE_WIDGETS);
+        List<Goal> goals = MainApp.getDataManager().getGoals();
+        Set<Goal.GoalType> existingGoalTypes = new HashSet<>();
 
-    @FXML
-    private void handleSelectImage() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Select Image");
-        fileChooser.getExtensionFilters().addAll(
-            new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.gif")
-        );
-        File file = fileChooser.showOpenDialog(mainApp.getPrimaryStage());
-        if (file != null) {
-            selectedImageFile = file;
-            imageView.setImage(new Image(file.toURI().toString()));
+        for (Goal goal : goals) {
+            if (!existingGoalTypes.contains(goal.getType())) {
+                dynamicWidgetList.add("Goal: " + goal.getDescription());
+                existingGoalTypes.add(goal.getType());
+            }
+        }
+        // --- End of new logic ---
+        
+        for (String widgetName : dynamicWidgetList) {
+            VBox previewBox = new VBox(10);
+            previewBox.getStyleClass().add("note-box");
+            previewBox.setPrefSize(250, 180);
+            previewBox.setAlignment(Pos.TOP_CENTER);
+
+            Label previewLabel = new Label("Preview: " + widgetName);
+            previewLabel.getStyleClass().add("h3");
+            previewLabel.setWrapText(true);
+            
+            CheckBox checkBox = new CheckBox("Add to Dashboard");
+            checkBox.setSelected(activeWidgetNames.contains(widgetName));
+            checkBox.setMaxWidth(Double.MAX_VALUE);
+            checkBox.getStyleClass().add("widget-checkbox");
+            
+            Pane spacer = new Pane();
+            VBox.setVgrow(spacer, Priority.ALWAYS);
+            VBox.setMargin(checkBox, new Insets(0, 10, 10, 10));
+            
+            widgetCheckBoxes.put(widgetName, checkBox);
+            previewBox.getChildren().addAll(previewLabel, spacer, checkBox);
+            widgetSelectionPane.getChildren().add(previewBox);
         }
     }
     
-    private void addTag(String tag) {
-        String currentTags = tagsField.getText();
-        if (currentTags.isEmpty()) {
-            tagsField.setText(tag);
-        } else {
-            tagsField.setText(currentTags + ", " + tag);
-        }
-    }
-
-    @FXML private void addAPlusTag() { addTag("A+"); }
-    @FXML private void addATag() { addTag("A"); }
-    @FXML private void addBPlusTag() { addTag("B+"); }
-    @FXML private void addCPlusTag() { addTag("C+"); }
-
     @FXML
     private void handleSave() {
-        if (selectedImageFile == null) {
-            showAlert("No Image Selected", "Please select an image file first.");
-            return;
-        }
-
-        try {
-            // Create a unique filename and copy the image to the app's data directory
-            String extension = selectedImageFile.getName().substring(selectedImageFile.getName().lastIndexOf("."));
-            String uniqueFileName = UUID.randomUUID().toString() + extension;
-            Path targetDir = Paths.get(MainApp.getDataManager().getBaseDir(), "images");
-            Files.createDirectories(targetDir); // Ensure the 'images' directory exists
-            Path targetPath = targetDir.resolve(uniqueFileName);
-            Files.copy(selectedImageFile.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-            
-            // Get tags from text field
-            String relativeImagePath = "images/" + uniqueFileName;
-            List<String> tags = Arrays.asList(tagsField.getText().split("\\s*,\\s*"));
-            
-            ExampleImage newExample = new ExampleImage(relativeImagePath, tags);
-            
-            // Add to the correct list (won or lost)
-            if ("Won".equals(exampleType)) {
-                currentSetup.getWonExamples().add(newExample);
-            } else {
-                currentSetup.getLostExamples().add(newExample);
+        Settings settings = MainApp.getDataManager().getSettings();
+        List<String> newActiveWidgets = new ArrayList<>();
+        
+        Set<Cell> occupiedCells = new HashSet<>();
+        if (settings.activeWidgets != null) {
+            for (String layoutInfo : settings.activeWidgets) {
+                String[] parts = layoutInfo.split(";");
+                if (parts.length == 3) {
+                    occupiedCells.add(new Cell(Integer.parseInt(parts[1]), Integer.parseInt(parts[2])));
+                }
             }
-            
-            MainApp.getDataManager().saveSetupSamples();
-            handleBack(); // Go back after saving
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            showAlert("Save Failed", "Could not save the image file.");
         }
+
+        for (Map.Entry<String, CheckBox> entry : widgetCheckBoxes.entrySet()) {
+            String widgetName = entry.getKey();
+            boolean isSelected = entry.getValue().isSelected();
+            
+            // Find an existing entry if it exists
+            String existingEntry = Optional.ofNullable(settings.activeWidgets).orElse(new ArrayList<>()).stream()
+                .filter(s -> s.startsWith(widgetName + ";"))
+                .findFirst().orElse(null);
+                
+            if (isSelected) {
+                if (existingEntry != null) {
+                    newActiveWidgets.add(existingEntry);
+                } else {
+                    Cell emptyCell = findFirstEmptyCell(occupiedCells);
+                    newActiveWidgets.add(String.format("%s;%d;%d", widgetName, emptyCell.x(), emptyCell.y()));
+                    occupiedCells.add(emptyCell);
+                }
+            }
+        }
+        
+        settings.activeWidgets = newActiveWidgets;
+        MainApp.getDataManager().saveSettings(settings);
+        
+        mainApp.showDashboard();
     }
 
-    private void showAlert(String title, String content) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
-    }
-    
-    @FXML
-    private void handleBack() {
-        mainApp.showExamplesView(currentSetup, exampleType);
+    private Cell findFirstEmptyCell(Set<Cell> occupiedCells) {
+        for (int r = 0; r < 10; r++) { 
+            for (int c = 0; c < 3; c++) {
+                Cell cell = new Cell(c, r);
+                if (!occupiedCells.contains(cell)) {
+                    return cell;
+                }
+            }
+        }
+        return new Cell(0, 0);
     }
 }

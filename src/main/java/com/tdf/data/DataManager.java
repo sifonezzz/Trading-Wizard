@@ -26,14 +26,15 @@ public class DataManager {
     private static final Path NOTES_FILE = Paths.get(BASE_DIR, "notes.json");
     private static final Path PNL_FILE = Paths.get(BASE_DIR, "pnl.json");
     private static final Path SETUP_SAMPLES_FILE = Paths.get(BASE_DIR, "setup_samples.json");
-    private static final String[] ALL_FILES = {"settings.json", "notes.json", "pnl.json", "setup_samples.json"};
-
+    private static final Path GOALS_FILE = Paths.get(BASE_DIR, "goals.json");
+    private static final String[] ALL_FILES = {"settings.json", "notes.json", "pnl.json", "setup_samples.json", "goals.json"};
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     private Settings settings;
     private List<Note> notes;
     private Map<String, PnlEntry> pnlData;
     private List<SetupSample> setupSamples;
+    private List<Goal> goals;
 
     public DataManager() {
         try {
@@ -50,13 +51,13 @@ public class DataManager {
         loadNotes();
         loadPnlData();
         loadSetupSamples();
+        loadGoals();
     }
 
     public String getBaseDir() {
         return BASE_DIR;
     }
 
-    // --- Settings Methods ---
     public Settings getSettings() { return settings; }
 
     public void saveSettings(Settings newSettings) {
@@ -78,7 +79,6 @@ public class DataManager {
         }
     }
 
-    // --- Notes Methods ---
     public List<Note> getNotes() { return notes; }
 
     public void addNote(Note note) {
@@ -102,7 +102,6 @@ public class DataManager {
         } catch (IOException e) { e.printStackTrace(); }
     }
 
-    // --- PNL Methods ---
     public Map<String, PnlEntry> getPnlData() { return new TreeMap<>(pnlData); }
 
     public void addPnl(String dateStr, double amount, String noteOfDay) {
@@ -139,17 +138,12 @@ public class DataManager {
         } catch (IOException e) { e.printStackTrace(); }
     }
     
-    // --- Setup Samples Methods ---
-    public List<SetupSample> getSetupSamples() {
-        return setupSamples;
-    }
+    public List<SetupSample> getSetupSamples() { return setupSamples; }
 
     public void saveSetupSamples() {
         try (FileWriter writer = new FileWriter(SETUP_SAMPLES_FILE.toFile())) {
             gson.toJson(setupSamples, writer);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { e.printStackTrace(); }
     }
     
     private void loadSetupSamples() {
@@ -168,7 +162,24 @@ public class DataManager {
         }
     }
     
-    // --- Backup and Restore Methods ---
+    public List<Goal> getGoals() { return goals; }
+
+    public void saveGoals() {
+        try (FileWriter writer = new FileWriter(GOALS_FILE.toFile())) {
+            gson.toJson(goals, writer);
+        } catch (IOException e) { e.printStackTrace(); }
+    }
+
+    private void loadGoals() {
+        if (Files.exists(GOALS_FILE)) {
+            try (FileReader reader = new FileReader(GOALS_FILE.toFile())) {
+                Type listType = new TypeToken<ArrayList<Goal>>(){}.getType();
+                goals = gson.fromJson(reader, listType);
+                if (goals == null) goals = new ArrayList<>();
+            } catch (IOException e) { goals = new ArrayList<>(); }
+        } else { goals = new ArrayList<>(); }
+    }
+    
     public boolean createBackup(File targetZipFile) {
         try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(targetZipFile))) {
             for (String fileName : ALL_FILES) {
