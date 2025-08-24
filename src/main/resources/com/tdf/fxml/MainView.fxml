@@ -70,20 +70,20 @@
             <BorderPane fx:id="contentPane" styleClass="content-pane" BorderPane.alignment="CENTER" />
          </center>
          <top>
-            <StackPane fx:id="titleBar" styleClass="title-bar">
-               <children>
-                  <HBox alignment="CENTER_LEFT" spacing="20.0" StackPane.alignment="CENTER_LEFT">
-                     <children>
-                        <Label fx:id="windowTitle" onMouseClicked="#handleTitleClick" styleClass="window-title-clickable" text="Trading Wizard" />
-                     </children>
-                  </HBox>
-                  <HBox alignment="CENTER" spacing="10.0" StackPane.alignment="CENTER">
+            <BorderPane fx:id="titleBar" styleClass="title-bar">
+               <left>
+                  <Label fx:id="windowTitle" onMouseClicked="#handleTitleClick" styleClass="window-title-clickable" text="Trading Wizard" BorderPane.alignment="CENTER_LEFT" />
+               </left>
+               <center>
+                  <HBox alignment="CENTER" spacing="10.0" BorderPane.alignment="CENTER">
                      <children>
                         <Button fx:id="startSessionButton" styleClass="top-bar-action-button" text="Start Session" />
                         <Button fx:id="afterTradingButton" styleClass="top-bar-action-button" text="After-trading Session" />
                      </children>
                   </HBox>
-                  <HBox alignment="CENTER_RIGHT" StackPane.alignment="CENTER_RIGHT">
+               </center>
+               <right>
+                  <HBox alignment="CENTER_RIGHT" BorderPane.alignment="CENTER_RIGHT">
                      <children>
                         <Button onAction="#showSettings" styleClass="icon-button">
                            <graphic>
@@ -99,8 +99,8 @@
                         </HBox>
                      </children>
                   </HBox>
-               </children>
-            </StackPane>
+               </right>
+            </BorderPane>
          </top>
       </BorderPane>
       <Label fx:id="welcomeLabel" styleClass="welcome-label" text="Welcome" visible="false" />

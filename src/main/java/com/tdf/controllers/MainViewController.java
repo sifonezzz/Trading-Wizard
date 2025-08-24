@@ -29,12 +29,13 @@ public class MainViewController implements Controller {
     @FXML private StackPane rootStackPane;
     @FXML private BorderPane rootPane;
     @FXML private BorderPane contentPane;
-    @FXML private StackPane titleBar;
+    
+    // FIX: Changed type from StackPane to BorderPane to match the FXML file
+    @FXML private BorderPane titleBar;
+
     @FXML private VBox sidebar;
     @FXML private Label welcomeLabel;
     @FXML private ToggleGroup navigationGroup;
-
-    // FIX: Added fx:id for session buttons
     @FXML private Button startSessionButton;
     @FXML private Button afterTradingButton;
 
@@ -61,7 +62,7 @@ public class MainViewController implements Controller {
             stage.setY(event.getScreenY() - yOffset);
         });
 
-        // FIX: Programmatically set actions for top bar buttons
+        // Programmatically set actions for top bar buttons
         startSessionButton.setOnAction(e -> showTradingFlow());
         afterTradingButton.setOnAction(e -> showAfterTrading());
 
