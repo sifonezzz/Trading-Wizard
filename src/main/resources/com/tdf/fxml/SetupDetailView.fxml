@@ -5,11 +5,11 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
@@ -17,19 +17,26 @@
 
 <BorderPane styleClass="main-view" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.tdf.controllers.SetupDetailController">
    <top>
-      <StackPane>
-         <children>
-            <Label fx:id="setupNameLabel" styleClass="h1" text="Setup Name" StackPane.alignment="CENTER" />
-            <Button onAction="#handleBack" styleClass="back-button" text="&lt; Back" StackPane.alignment="CENTER_LEFT">
-               <StackPane.margin>
+      <BorderPane>
+         <left>
+            <Button onAction="#handleBack" styleClass="back-button" text="&lt; Back" BorderPane.alignment="CENTER_LEFT">
+               <BorderPane.margin>
                   <Insets left="20.0" />
-               </StackPane.margin>
+               </BorderPane.margin>
             </Button>
-         </children>
+         </left>
+         <center>
+            <VBox alignment="CENTER" spacing="5.0" BorderPane.alignment="CENTER">
+               <children>
+                  <Label fx:id="setupNameLabel" styleClass="h1" text="Setup Name" />
+                  <Label text="Setup Details" styleClass="note-text" />
+               </children>
+            </VBox>
+         </center>
          <padding>
             <Insets top="20.0" />
          </padding>
-      </StackPane>
+      </BorderPane>
    </top>
    <center>
       <GridPane hgap="30.0" styleClass="content-pane">
@@ -43,20 +50,29 @@
          <children>
             <VBox spacing="10.0">
                <children>
-                  <Label text="Description &amp; Rules" styleClass="h3" />
-                  <VBox fx:id="descriptionContainer" VBox.vgrow="ALWAYS">
+                  <VBox styleClass="settings-section" VBox.vgrow="ALWAYS">
                      <children>
-                        <TextArea fx:id="descriptionArea" prefHeight="400.0" wrapText="true" VBox.vgrow="ALWAYS">
-                           <styleClass>
-                              <String fx:value="description-area" />
-                           </styleClass>
-                        </TextArea>
+                        <Label text="Setup Name" styleClass="h3" />
+                        <TextField fx:id="nameField" />
+                        <Label text="Description &amp; Rules" styleClass="h3">
+                           <VBox.margin>
+                              <Insets top="15.0" />
+                           </VBox.margin>
+                        </Label>
+                        <TextArea fx:id="descriptionArea" prefHeight="400.0" wrapText="true" VBox.vgrow="ALWAYS" />
+                        <Label text="Tags (comma-separated)" styleClass="h3">
+                           <VBox.margin>
+                              <Insets top="15.0" />
+                           </VBox.margin>
+                        </Label>
+                        <TextField fx:id="tagsField" />
                         <HBox alignment="BOTTOM_RIGHT" maxWidth="Infinity">
                            <children>
-                              <Pane HBox.hgrow="ALWAYS" />
-                              <Button fx:id="editDescriptionButton" onAction="#handleEditDescription" styleClass="icon-button" text="Edit" />
-                              <Button fx:id="saveDescriptionButton" onAction="#handleSaveDescription" styleClass="standard-button" text="Save" />
+                              <Button fx:id="saveButton" onAction="#handleSave" styleClass="standard-button" text="Save Changes" />
                            </children>
+                           <VBox.margin>
+                              <Insets top="20.0" />
+                           </VBox.margin>
                         </HBox>
                      </children>
                   </VBox>
@@ -70,14 +86,14 @@
                         <FontIcon iconLiteral="fas-check-circle" styleClass="won-icon" />
                         <Label styleClass="h3" text="Won Examples" />
                         <Label fx:id="wonCountLabel" text="0 Examples" />
-                        </children>
+                     </children>
                   </VBox>
                   <VBox fx:id="lostExamplesBox" alignment="CENTER" onMouseClicked="#showLostSetups" spacing="10.0" styleClass="example-card">
                      <children>
                         <FontIcon iconLiteral="fas-times-circle" styleClass="lost-icon" />
                         <Label styleClass="h3" text="Lost Examples" />
                         <Label fx:id="lostCountLabel" text="0 Examples" />
-                        </children>
+                     </children>
                   </VBox>
                </children>
             </VBox>

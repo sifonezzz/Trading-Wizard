@@ -1,23 +1,30 @@
+// FILE: src/main/java/com/tdf/controllers/SetupDetailController.java
 package com.tdf.controllers;
 
 import com.tdf.Controller;
 import com.tdf.MainApp;
 import com.tdf.data.SetupSample;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.control.Alert;
 import javafx.scene.layout.VBox;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class SetupDetailController implements Controller {
 
     @FXML private Label setupNameLabel;
     @FXML private TextArea descriptionArea;
-    @FXML private Button editDescriptionButton;
-    @FXML private Button saveDescriptionButton;
     @FXML private VBox descriptionContainer;
     @FXML private Label wonCountLabel;
     @FXML private Label lostCountLabel;
+    
+    // --- NEW FXML FIELDS ---
+    @FXML private TextField nameField;
+    @FXML private TextField tagsField;
     
     private MainApp mainApp;
     private SetupSample currentSetup;
@@ -30,42 +37,46 @@ public class SetupDetailController implements Controller {
     public void setSetup(SetupSample setup) {
         this.currentSetup = setup;
         setupNameLabel.setText(setup.getName());
-        descriptionArea.setText(setup.getDescription());
         
-        // Update the example counts
+        // --- NEW: Populate new fields ---
+        nameField.setText(setup.getName());
+        descriptionArea.setText(setup.getDescription());
+        if (setup.getTags() != null) {
+            tagsField.setText(String.join(", ", setup.getTags()));
+        }
+        
         int wonCount = setup.getWonExamples().size();
         wonCountLabel.setText(wonCount + (wonCount == 1 ? " Example" : " Examples"));
         
         int lostCount = setup.getLostExamples().size();
         lostCountLabel.setText(lostCount + (lostCount == 1 ? " Example" : " Examples"));
-        
-        setEditMode(false); // Start in view mode
     }
 
+    // --- RENAMED & UPDATED: handleSave ---
     @FXML
-    private void handleEditDescription() {
-        setEditMode(true);
-    }
-
-    @FXML
-    private void handleSaveDescription() {
+    private void handleSave() {
+        // Update all fields from the UI
+        currentSetup.setName(nameField.getText());
         currentSetup.setDescription(descriptionArea.getText());
-        MainApp.getDataManager().saveSetupSamples();
-        setEditMode(false);
-    }
-
-    private void setEditMode(boolean editing) {
-        descriptionArea.setEditable(editing);
-        editDescriptionButton.setVisible(!editing);
-        saveDescriptionButton.setVisible(editing);
+        currentSetup.setTags(
+            Arrays.stream(tagsField.getText().split(","))
+                  .map(String::trim)
+                  .filter(tag -> !tag.isEmpty())
+                  .collect(Collectors.toList())
+        );
+        currentSetup.updateLastModified();
         
-        if (editing) {
-            descriptionArea.getStyleClass().remove("non-editable-text");
-            descriptionArea.getStyleClass().add("editable-text");
-        } else {
-            descriptionArea.getStyleClass().remove("editable-text");
-            descriptionArea.getStyleClass().add("non-editable-text");
-        }
+        MainApp.getDataManager().saveSetupSamples();
+        
+        // Update the main title label after saving a new name
+        setupNameLabel.setText(currentSetup.getName());
+
+        // Show confirmation
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Success");
+        alert.setHeaderText(null);
+        alert.setContentText("Setup details have been saved successfully.");
+        alert.showAndWait();
     }
 
     @FXML
